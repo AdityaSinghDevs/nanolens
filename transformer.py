@@ -6,13 +6,13 @@ from torch.nn import functional as F
 '''HParams'''
 batch_size = 32 
 block_size = 8 
-max_iters = 3000
+max_iters = 5000
 eval_interval = 300
-learning_rate = 1e-2
+learning_rate = 1e-3
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 eval_iters = 200
 n_embd = 32
-head_size = 16
+# head_size = 16
 
 
 torch.manual_seed(1337)
@@ -86,15 +86,15 @@ class Head(nn.Module):
         self.register_buffer('tril', torch.tril(torch.ones(block_size, block_size)))
 
     def forward(self, x):
-        B,T,C = x.shape
+        B,T, C = x.shape
         k = self.key(x) #(B,T,C)
         q = self.query(x)
 
         # computing affinities (attention scores)
 
-        wei = q @ k.transpos(-2,-1) * C**-0.5 
+        wei = q @ k.transpose(-2,-1) * C**-0.5 
         # BTC @ BCT -> BTT
-        wei = wei.masked_fill(self.tril[:T, :T] == 0, float('inf')) #BTT
+        wei = wei.masked_fill(self.tril[:T, :T] == 0, float('-inf')) #BTT
         wei = F.softmax(wei, dim =-1) #BTT
 
         #perform the weighted aggregation
@@ -109,6 +109,7 @@ class BigramLanguageModel(nn.Module):
         super().__init__()
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
+        self.sa_head = Head(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
     def forward(self, idx, targets=None):
@@ -119,6 +120,7 @@ class BigramLanguageModel(nn.Module):
         pos_emb = self.position_embedding_table(torch.arange(T, device = device)) #(T,C)
 
         x = token_emb + pos_emb #(B,T,C)
+        x = self.sa_head(x) #applying one head of self attention. (BTC)
         logits = self.lm_head(x) #(B,T,C = vocab size here)
         # logits are scores of next predicted token
         if targets is None:
@@ -136,8 +138,11 @@ class BigramLanguageModel(nn.Module):
     def generate(self, idx, max_new_tokens):
         # idx is (B, T) array of indices in the current context
         for _ in range(max_new_tokens):
+
+            #crop idx to the last block_size tokens
+            idx_cond = idx[:, -block_size:]
             # get the predictions
-            logits, loss = self(idx)
+            logits, loss = self(idx_cond)
             # focus only on the last time step
             logits = logits[:, -1, :] # becomes (B, C)
             # apply softmax to get probabilities

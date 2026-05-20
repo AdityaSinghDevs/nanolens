@@ -1,0 +1,143 @@
+<!-- ========================= FIXED / UPDATED PARTS ONLY ========================= -->
+<!-- Replace ONLY these sections inside Claude's original HTML -->
+
+<!-- ========================================================================== -->
+<!-- FIX 1: ADD head_size hyperparameter near top -->
+<!-- Place this somewhere near batch_size / n_embd descriptions -->
+<!-- ========================================================================== -->
+
+<div class="node gray" onclick="alert('Your actual code currently calls Head(n_embd), meaning head_size = 32. If later changed to Head(8), then k,q,v become (32,8,8). Right now the attention head dimension equals embedding dimension.')">
+  <div class="node-title">actual current attention configuration</div>
+  <div class="node-sub">self.sa_head = Head(n_embd)</div>
+  <div class="node-sub2">therefore: head_size = 32 (NOT 8 currently)</div>
+  <span class="shape-badge">head_size = 32</span>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ========================================================================== -->
+<!-- FIX 2: UPDATE ATTENTION HEAD LINEAR LAYERS -->
+<!-- Replace Claude's old KQV block with this -->
+<!-- ========================================================================== -->
+
+<div class="node coral" onclick="alert('Your current code uses Head(n_embd), so head_size = 32. Therefore each Linear layer projects from 32 → 32, not 32 → 8. Every token keeps full embedding dimensionality through attention.')">
+  <div class="node-title">key, query, value — nn.Linear(32, 32, bias=False)</div>
+  <div class="node-sub">x (32,8,32) → k (32,8,32) — token features used as keys</div>
+  <div class="node-sub2">x (32,8,32) → q (32,8,32) — token search queries</div>
+  <div class="node-sub2">x (32,8,32) → v (32,8,32) — token information vectors</div>
+  <span class="shape-badge">head_size = 32</span>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ========================================================================== -->
+<!-- FIX 3: UPDATE ATTENTION SCORE CALCULATION -->
+<!-- Replace old q@k block -->
+<!-- ========================================================================== -->
+
+<div class="node coral" onclick="alert('For every token, query vectors are dot-producted against all key vectors. This computes pairwise similarity between every token position. Because k and q are both 32-dimensional, scaling should ideally use sqrt(32).')">
+  <div class="node-title">wei = q @ k.transpose(-2,-1) × scale</div>
+  <div class="node-sub">(32,8,32) @ (32,32,8) → wei (32, 8, 8)</div>
+  <div class="node-sub2">every token compares itself against every other token</div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ========================================================================== -->
+<!-- FIX 4: ADD NOTE ABOUT THE BUG YOU HAD -->
+<!-- Place directly AFTER masking node -->
+<!-- ========================================================================== -->
+
+<div class="node gray" onclick="alert('Your original bug was using +inf instead of -inf inside masked_fill. Softmax(+inf) produces unstable probabilities and causes NaN losses. The mask MUST use negative infinity.')">
+  <div class="node-title">important bug fix — masking</div>
+  <div class="node-sub">masked_fill(..., float('-inf'))</div>
+  <div class="node-sub2">NOT float('inf')</div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ========================================================================== -->
+<!-- FIX 5: UPDATE WEI @ V BLOCK -->
+<!-- Replace old out = wei@v block -->
+<!-- ========================================================================== -->
+
+<div class="node coral" onclick="alert('Attention probabilities are multiplied with value vectors. Each token gathers information from previous relevant tokens and mixes them into a new contextual representation. Because v has dimension 32, output also remains 32-dimensional.')">
+  <div class="node-title">out = wei @ v</div>
+  <div class="node-sub">(32,8,8) @ (32,8,32) → out (32, 8, 32)</div>
+  <div class="node-sub2">tokens become context-aware through weighted aggregation</div>
+</div>
+
+<!-- ========================================================================== -->
+<!-- FIX 6: ADD EXPLICIT FLOW BACK INTO BIGRAM MODEL -->
+<!-- Place AFTER attention section and BEFORE lm_head -->
+<!-- ========================================================================== -->
+
+<div class="arrow">↓</div>
+
+<div class="node teal" onclick="alert('The attention head returns contextualized token representations back into BigramLanguageModel.forward(). At this point every token embedding contains information from relevant previous tokens.')">
+  <div class="node-title">return from attention head</div>
+  <div class="node-sub">self.sa_head(x) → x becomes context-aware</div>
+  <div class="node-sub2">shape preserved: (32, 8, 32)</div>
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- ========================================================================== -->
+<!-- FIX 7: UPDATE SHAPE SUMMARY -->
+<!-- Replace ONLY the shape summary block -->
+<!-- ========================================================================== -->
+
+<div style="margin-top:32px; padding:16px; border:0.5px dashed #2a2a3a; border-radius:10px; width:100%">
+<div class="section-label" style="position:static; margin-bottom:8px">shape summary at every stage</div>
+
+<div style="font-family:monospace; font-size:12px; color:var(--text-dim); line-height:2.2">
+
+<span style="color:#7c6af7">raw text</span>
+→ string (1,130,617 chars)<br>
+
+<span style="color:#7c6af7">encoded tensor</span>
+→ (1,130,617,) torch.long<br>
+
+<span style="color:#8888aa">get_batch xb</span>
+→ (32, 8) token IDs<br>
+
+<span style="color:#7c6af7">token_emb</span>
+→ (32, 8, 32) n_embd=32<br>
+
+<span style="color:#6af7c8">pos_emb</span>
+→ (8, 32) broadcasted<br>
+
+<span style="color:#8888aa">x residual</span>
+→ (32, 8, 32)<br>
+
+<span style="color:#f0997b">k, q, v</span>
+→ (32, 8, 32) because head_size=32<br>
+
+<span style="color:#f0997b">wei = q@kᵀ</span>
+→ (32, 8, 8) attention scores<br>
+
+<span style="color:#8888aa">masked wei</span>
+→ future tokens = -inf<br>
+
+<span style="color:#8888aa">wei softmaxed</span>
+→ (32, 8, 8) attention probabilities<br>
+
+<span style="color:#f0997b">out = wei@v</span>
+→ (32, 8, 32) contextual token vectors<br>
+
+<span style="color:#6af7c8">attention output returned</span>
+→ x = (32, 8, 32)<br>
+
+<span style="color:#6af7c8">logits lm_head</span>
+→ (32, 8, 91) vocab scores<br>
+
+<span style="color:#8888aa">reshape for CE loss</span>
+→ logits.view(256,91)<br>
+
+<span style="color:#8888aa">cross entropy</span>
+→ scalar loss
+
+</div>
+</div>
+
+<!-- ========================= END OF FIXES ========================= -->

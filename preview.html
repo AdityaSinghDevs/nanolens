@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiny GPT / Attention Flowchart</title>
+
+<style>
+body{
+    background:#0f172a;
+    color:#e2e8f0;
+    font-family:Arial, sans-serif;
+    padding:30px;
+    line-height:1.5;
+}
+
+h1,h2{
+    color:#38bdf8;
+}
+
+.container{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:30px;
+}
+
+.box{
+    border:2px solid #38bdf8;
+    padding:18px;
+    border-radius:12px;
+    width:90%;
+    background:#111827;
+    box-shadow:0 0 10px rgba(56,189,248,0.3);
+}
+
+.arrow{
+    font-size:40px;
+    color:#38bdf8;
+}
+
+.code{
+    background:#1e293b;
+    padding:10px;
+    border-radius:8px;
+    margin-top:10px;
+    overflow-x:auto;
+    color:#facc15;
+}
+
+.highlight{
+    color:#22c55e;
+    font-weight:bold;
+}
+
+.warning{
+    color:#f87171;
+    font-weight:bold;
+}
+
+.tensor{
+    color:#c084fc;
+    font-weight:bold;
+}
+
+.step-title{
+    color:#facc15;
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+.sub{
+    margin-left:20px;
+}
+
+</style>
+</head>
+<body>
+
+<h1>Transformer Attention Pipeline Flowchart</h1>
+
+<div class="container">
+
+<!-- STEP 1 -->
+<div class="box">
+<div class="step-title">1. Load Raw Text</div>
+
+<p>
+Reads entire Shakespeare text from:
+</p>
+
+<div class="code">
+with open('input.txt', 'r') as f:
+    text = f.read()
+</div>
+
+<p>
+Suppose:
+</p>
+
+<div class="code">
+text = "hello world"
+</div>
+
+<p>
+Every unique character becomes part of vocabulary.
+</p>
+
+<p class="highlight">
+vocab_size = number of unique characters
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 2 -->
+<div class="box">
+<div class="step-title">2. Character Tokenization</div>
+
+<div class="code">
+stoi = { ch:i for i,ch in enumerate(chars) }
+itos = { i:ch for i,ch in enumerate(chars) }
+</div>
+
+<p>
+Example:
+</p>
+
+<div class="code">
+h → 0
+e → 1
+l → 2
+o → 3
+</div>
+
+<p>
+Encoding:
+</p>
+
+<div class="code">
+"hello" → [0,1,2,2,3]
+</div>
+
+<p class="highlight">
+Final Tensor Shape:
+</p>
+
+<div class="code">
+data.shape = (total_tokens,)
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 3 -->
+<div class="box">
+<div class="step-title">3. Train / Validation Split</div>
+
+<div class="code">
+n = int(0.9 * len(data))
+
+train_data = data[:n]
+val_data = data[n:]
+</div>
+
+<p>
+90% training<br>
+10% validation
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 4 -->
+<div class="box">
+<div class="step-title">4. get_batch()</div>
+
+<p>
+Randomly samples training sequences.
+</p>
+
+<div class="code">
+batch_size = 32
+block_size = 8
+</div>
+
+<p>
+Input:
+</p>
+
+<div class="code">
+x.shape = (32, 8)
+</div>
+
+<p>
+Target:
+</p>
+
+<div class="code">
+y.shape = (32, 8)
+</div>
+
+<p>
+Each row contains 8 characters.
+</p>
+
+<p>
+Targets are shifted by 1 token.
+</p>
+
+<div class="code">
+x: "hello wo"
+y: "ello wor"
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 5 -->
+<div class="box">
+<div class="step-title">5. Enter BigramLanguageModel.forward()</div>
+
+<div class="code">
+logits, loss = model(xb, yb)
+</div>
+
+<p class="highlight">
+Input Tensor:
+</p>
+
+<div class="code">
+idx.shape = (B,T) = (32,8)
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 6 -->
+<div class="box">
+<div class="step-title">6. Token Embedding Lookup</div>
+
+<div class="code">
+self.token_embedding_table =
+nn.Embedding(vocab_size, n_embd)
+</div>
+
+<p>
+Hyperparameter:
+</p>
+
+<div class="code">
+n_embd = 32
+</div>
+
+<p>
+Every token becomes a learned vector of size 32.
+</p>
+
+<p class="highlight">
+Transformation:
+</p>
+
+<div class="code">
+(32,8) → (32,8,32)
+</div>
+
+<p>
+Meaning:
+</p>
+
+<div class="code">
+(Batch, Time, Embedding)
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 7 -->
+<div class="box">
+<div class="step-title">7. Positional Embeddings</div>
+
+<div class="code">
+self.position_embedding_table =
+nn.Embedding(block_size, n_embd)
+</div>
+
+<p>
+Adds position awareness.
+</p>
+
+<p>
+Without this:
+Transformer cannot know token order.
+</p>
+
+<div class="code">
+Position 0 → vector
+Position 1 → vector
+...
+Position 7 → vector
+</div>
+
+<p class="highlight">
+Shape:
+</p>
+
+<div class="code">
+pos_emb.shape = (8,32)
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 8 -->
+<div class="box">
+<div class="step-title">8. Combine Token + Position Embeddings</div>
+
+<div class="code">
+x = token_emb + pos_emb
+</div>
+
+<p class="highlight">
+Broadcasting:
+</p>
+
+<div class="code">
+(32,8,32) + (8,32)
+→ (32,8,32)
+</div>
+
+<p>
+Now every token contains:
+</p>
+
+<ul>
+<li>semantic meaning</li>
+<li>position information</li>
+</ul>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 9 -->
+<div class="box">
+<div class="step-title">9. Enter Self-Attention Head</div>
+
+<div class="code">
+x = self.sa_head(x)
+</div>
+
+<p class="highlight">
+Input Shape:
+</p>
+
+<div class="code">
+(B,T,C) = (32,8,32)
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 10 -->
+<div class="box">
+<div class="step-title">10. Linear Layers → K, Q, V</div>
+
+<div class="code">
+self.key   = nn.Linear(32,32)
+self.query = nn.Linear(32,32)
+self.value = nn.Linear(32,32)
+</div>
+
+<p>
+Each token vector passes through 3 separate learned matrices.
+</p>
+
+<p class="highlight">
+Outputs:
+</p>
+
+<div class="code">
+k.shape = (32,8,32)
+q.shape = (32,8,32)
+v.shape = (32,8,32)
+</div>
+
+<h2>Meaning</h2>
+
+<ul>
+<li><span class="highlight">Q (Query)</span> → What am I looking for?</li>
+<li><span class="highlight">K (Key)</span> → What information do I contain?</li>
+<li><span class="highlight">V (Value)</span> → Actual information to pass</li>
+</ul>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 11 -->
+<div class="box">
+<div class="step-title">11. Attention Score Calculation</div>
+
+<div class="code">
+wei = q @ k.transpose(-2,-1)
+</div>
+
+<p>
+Shapes:
+</p>
+
+<div class="code">
+q = (32,8,32)
+k.T = (32,32,8)
+</div>
+
+<p class="highlight">
+Matrix Multiplication:
+</p>
+
+<div class="code">
+(32,8,32) @ (32,32,8)
+→ (32,8,8)
+</div>
+
+<p>
+Now every token has a score against every other token.
+</p>
+
+<p>
+This is the attention matrix.
+</p>
+
+<h2>Interpretation</h2>
+
+<div class="code">
+Token i asks:
+"How important is token j to me?"
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 12 -->
+<div class="box">
+<div class="step-title">12. Scaling</div>
+
+<div class="code">
+wei = wei * (head_dim ** -0.5)
+</div>
+
+<p>
+Prevents exploding attention values.
+</p>
+
+<p class="warning">
+You originally used C instead of head_dim.
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 13 -->
+<div class="box">
+<div class="step-title">13. Causal Masking</div>
+
+<div class="code">
+wei = wei.masked_fill(
+    tril == 0,
+    float('-inf')
+)
+</div>
+
+<p>
+Prevents future token leakage.
+</p>
+
+<h2>Example</h2>
+
+<div class="code">
+Token 4 cannot see token 5,6,7
+</div>
+
+<p>
+Upper triangle becomes:
+</p>
+
+<div class="code">
+-inf
+</div>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 14 -->
+<div class="box">
+<div class="step-title">14. Softmax</div>
+
+<div class="code">
+wei = F.softmax(wei, dim=-1)
+</div>
+
+<p>
+Converts attention scores into probabilities.
+</p>
+
+<p class="highlight">
+Shape remains:
+</p>
+
+<div class="code">
+(32,8,8)
+</div>
+
+<p>
+Each row sums to 1.
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 15 -->
+<div class="box">
+<div class="step-title">15. Weighted Aggregation</div>
+
+<div class="code">
+out = wei @ v
+</div>
+
+<p>
+Shapes:
+</p>
+
+<div class="code">
+wei = (32,8,8)
+v    = (32,8,32)
+</div>
+
+<p class="highlight">
+Output:
+</p>
+
+<div class="code">
+(32,8,32)
+</div>
+
+<p>
+Each token now contains information gathered from previous tokens.
+</p>
+
+<h2>This is Contextual Understanding</h2>
+
+<p>
+Now token representations are no longer isolated.
+They are context-aware.
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 16 -->
+<div class="box">
+<div class="step-title">16. Final Language Modeling Head</div>
+
+<div class="code">
+logits = self.lm_head(x)
+</div>
+
+<div class="code">
+nn.Linear(32, vocab_size)
+</div>
+
+<p class="highlight">
+Transformation:
+</p>
+
+<div class="code">
+(32,8,32)
+→
+(32,8,vocab_size)
+</div>
+
+<p>
+Every token predicts probability distribution
+over all characters in vocabulary.
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 17 -->
+<div class="box">
+<div class="step-title">17. Cross Entropy Loss</div>
+
+<div class="code">
+loss = F.cross_entropy(logits, targets)
+</div>
+
+<p>
+Model prediction vs actual next token.
+</p>
+
+<p>
+Single scalar loss generated.
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- STEP 18 -->
+<div class="box">
+<div class="step-title">18. Backpropagation</div>
+
+<div class="code">
+loss.backward()
+optimizer.step()
+</div>
+
+<p>
+Gradients flow backward through:
+</p>
+
+<ul>
+<li>lm_head</li>
+<li>attention weights</li>
+<li>K/Q/V matrices</li>
+<li>embedding tables</li>
+</ul>
+
+<p>
+All parameters update slightly.
+</p>
+
+</div>
+
+<div class="arrow">↓</div>
+
+<!-- FINAL -->
+<div class="box">
+<div class="step-title">FINAL BIG PICTURE</div>
+
+<div class="code">
+
+Raw Text
+   ↓
+Character Tokenization
+   ↓
+Integer Sequences
+   ↓
+Batch Sampling
+   ↓
+Token Embeddings
+   ↓
+Position Embeddings
+   ↓
+Add Together
+   ↓
+Self Attention Head
+   ↓
+K,Q,V Projections
+   ↓
+Attention Scores
+   ↓
+Masked Softmax
+   ↓
+Weighted Value Aggregation
+   ↓
+Context Aware Representations
+   ↓
+Linear Vocabulary Projection
+   ↓
+Logits
+   ↓
+Cross Entropy Loss
+   ↓
+Backpropagation
+   ↓
+Updated Weights
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
