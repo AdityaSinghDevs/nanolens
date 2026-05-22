@@ -1,4 +1,10 @@
-with open('input.txt', 'r', encoding = 'utf-8')as f:
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
+text_path = BASE_DIR / "input.txt"
+
+with open(text_path, "r", encoding="utf-8") as f:
     text = f.read()
 
 chars = sorted(list(set(text)))
