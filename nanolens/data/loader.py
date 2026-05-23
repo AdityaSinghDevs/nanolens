@@ -1,29 +1,34 @@
 import torch
-
+ 
 from utils.config_loader import load_configs
-from nanolens.data.tokenizer import encode,text
-
+from nanolens.data.tokenizer import encode, text
+ 
 cfg = load_configs("default")
+ 
+block_size = cfg['hyperparameters']['block_size']
+batch_size = cfg['hyperparameters']['batch_size']
+split_ratio = cfg['hyperparameters']['n_train_test_split']
 
 def get_device():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     return device
 
-def train_test_split():
-    data = torch.tensor(encode(text), dtype = torch.long)
-    train_test_split = cfg['hyperparameters']['n_train_test_split']
-
-    n = int(train_test_split*len(data))
-    train_data = data[:n]
-    val_data = data[n:]
-
-    return train_data, val_data
+def _build_splits():
+    data = torch.tensor(encode(text), dtype=torch.long)
+    n = int(split_ratio * len(data))
+    return data[:n], data[n:]
+ 
+train_data, val_data = _build_splits()
 
 def get_batch(split):
 
-    train_data, val_data = train_test_split()
-    block_size = cfg['hyperparameters']['block_size']
-    batch_size = cfg['hyperparameters']['batch_size']
+    """
+    Returns a random (x, y) batch from the train or val split.
+ 
+    x : input tokens  — shape (batch_size, block_size)
+    y : target tokens — shape (batch_size, block_size), offset by 1
+    """
+
     device = get_device()
 
     data = train_data if split=='train' else val_data

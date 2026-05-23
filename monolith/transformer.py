@@ -176,7 +176,7 @@ class BigramLanguageModel(nn.Module):
         pos_emb = self.position_embedding_table(torch.arange(T, device = device)) #(T,C)
 
         x = token_emb + pos_emb #(B,T,C)
-        x = self.blocks(x) #applying one head of self attention. (BTC)
+        x = self.blocks(x) 
         # x = self.ffwd(x) #BTC
         logits = self.lm_head(x) #(B,T,C = vocab size here)
         # logits are scores of next predicted token
