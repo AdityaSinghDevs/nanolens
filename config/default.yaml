@@ -29,8 +29,8 @@ hyperparameters:
   # weight_decay : 0.1
 
 #--------------new train--colab--T4
-  batch_size : 256
-  block_size : 512 
+  batch_size : 128
+  block_size : 256 
   max_iters : 5000
   eval_interval : 300
   learning_rate : 1e-3
