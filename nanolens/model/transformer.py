@@ -48,6 +48,7 @@ class TransformerModel(nn.Module):
 
         x = token_emb + pos_emb 
         x = self.blocks(x)
+        x = self.ln_f(x)
 
         logits = self.lm_head(x)
 
