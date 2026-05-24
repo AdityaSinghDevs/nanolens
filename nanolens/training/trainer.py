@@ -60,7 +60,7 @@ def trainer():
             losses = estimate_loss(model)
             print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}, lr {lr:.6f}")
 
-        if iter % 1000 == 0 and iter > 0 :
+        if iter % 500 == 0 and iter > 0 :
             save_checkpoint(model, iter)
 
         xb, yb = get_batch('train')
