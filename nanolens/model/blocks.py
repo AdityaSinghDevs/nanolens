@@ -15,7 +15,14 @@ class Block(nn.Module):
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
 
-    def forward(self, x):
+    def forward(self, x, return_weights=False):
+
+        if return_weights:
+            attn_out, weights = self.sa(self.ln1(x), return_weights = True)
+            x = x + attn_out
+            x = x + self.ffwd(self.ln2(x))
+            return x, weights
+        
         x = x + self.sa(self.ln1(x))
         x = x + self.ffwd(self.ln2(x)) # Residual connections
         return x 

@@ -39,7 +39,7 @@ class TransformerModel(nn.Module):
         self.ln_f = nn.LayerNorm(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
-    def forward(self, idx, targets = None):
+    def forward(self, idx, targets = None, return_weights=False):
 
         B,T = idx.shape
         #idx(input indexes (xb)) and targets(yb) are both (Batch,Time) tensor of integers [taken when the model is called]
@@ -47,7 +47,15 @@ class TransformerModel(nn.Module):
         pos_emb = self.position_embedding_table(torch.arange(T, device=device))
 
         x = token_emb + pos_emb 
-        x = self.blocks(x)
+
+        all_weights = []
+        for block in self.blocks:
+            if return_weights:
+                x, weights = block(x, return_weights = True)
+                all_weights.append(weights)
+            else:
+                x = block(x)
+        # x = self.blocks(x)
         x = self.ln_f(x)
 
         logits = self.lm_head(x)
@@ -60,6 +68,9 @@ class TransformerModel(nn.Module):
             targets = targets.view(B*T)
 
             loss = F.cross_entropy(logits, targets)
+
+        if return_weights:
+            return logits, loss, all_weights
 
         return logits, loss 
     

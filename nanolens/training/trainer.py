@@ -1,4 +1,5 @@
 import torch
+import math
 from pathlib import Path
 
 from nanolens.model.transformer import TransformerModel
@@ -20,6 +21,17 @@ n_embd        = cfg['hyperparameters']['n_embd']
 
 device = get_device()
 
+def get_lr(current_iter):
+    warmup_iters =100
+    min_lr = learning_rate/10
+
+    if current_iter < warmup_iters:
+        return learning_rate * (current_iter + 1) / warmup_iters
+    
+    decay_ratio = (current_iter - warmup_iters) / (max_iters - warmup_iters)
+    coeff  = 0.5 * (1.0 + math.cos(math.pi * decay_ratio))
+    return min_lr + coeff * (learning_rate - min_lr)
+
 @torch.no_grad()
 def estimate_loss(model):
     out = {}
@@ -39,11 +51,14 @@ def trainer():
     model = TransformerModel().to(device)
     optimizer = build_optim(model, learning_rate, weight_decay)
 
+    print("Everything sticked together well, Training Started..")
     for iter in range(max_iters):
-    
+        lr = get_lr(iter)
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = lr
         if iter % eval_interval == 0:
             losses = estimate_loss(model)
-            print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}")
+            print(f"step {iter}: train loss {losses['train']:.4f}, val loss {losses['val']:.4f}, lr {lr:.6f}")
 
         if iter % 1000 == 0 and iter > 0 :
             save_checkpoint(model, iter)

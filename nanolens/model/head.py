@@ -23,7 +23,7 @@ class Head(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x,):
+    def forward(self, x, return_weights = False):
         B,T,C = x.shape
         k = self.key(x)
         q = self.query(x)
@@ -36,5 +36,8 @@ class Head(nn.Module):
 
         v = self.value(x)
         out = wei @ v
+
+        if return_weights == True:
+            return out, wei 
 
         return out 

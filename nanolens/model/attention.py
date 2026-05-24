@@ -20,7 +20,19 @@ class MultiHeadAttention(nn.Module):
         self.proj = nn.Linear(n_embd, n_embd)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
+    def forward(self, x, return_weights = False):
+
+        if return_weights:
+            results = [h(x, return_weights=True) for h in self.heads]
+            outputs = [r[0] for r in results]
+            weights = [r[1] for r in results]
+
+            out = torch.cat(outputs, dim= -1)
+            out = self.dropout(self.proj(out))
+
+            weights = torch.stack(weights, dim = 1)
+            return out, weights
+        
         out = torch.cat([h(x) for h in self.heads], dim = -1)
         out = self.dropout(self.proj(out))
         return out 
