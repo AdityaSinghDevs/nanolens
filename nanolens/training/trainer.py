@@ -77,11 +77,18 @@ def trainer():
 
 def save_checkpoint(model, iter):
     name = f"gpt_L{n_layer}_H{n_head}_E{n_embd}_{iter}.pt"
-    path = Path("checkpoints")/name
-    path.parent.mkdir(exist_ok=True)
-    torch.save(model.state_dict(), path)
-    print(f"Saved -> {path}")
-    return path
+
+    local_path = Path("checkpoints")/name
+    local_path.parent.mkdir(exist_ok=True)
+    torch.save(model.state_dict(), local_path)
+    print(f"Saved locally -> {local_path}")
+
+    drive_path = Path("/content/drive/MyDrive/nanolens/checkpoints") / name
+    if drive_path.parent.exists():
+        torch.save(model.state_dict(), drive_path)
+        print(f"Saved to Drive → {drive_path}")
+    
+    return local_path
 
 def load_model(checkpoint_path):
     model = TransformerModel().to(device)
