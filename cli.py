@@ -22,24 +22,30 @@ def parse_args():
 
     parser.add_argument("-i", "--inspect", type=str, default = None, help = 'Prompt to inspect e.g. --inspect "To be or not"')
 
+    parser.add_argument("--resume", type=int, default=0,
+                    help="Iter to resume from e.g. --resume 3000")
+
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
-    device  = get_device()
+    device = get_device()
 
-    if args.checkpoint:
+    if args.resume:
+        model = trainer(start_iter=args.resume, checkpoint_path=args.checkpoint)
+
+    elif args.checkpoint:
         model = load_model(args.checkpoint)
+
     else:
         model = trainer()
-    
+
     if args.inspect:
         result = inspect(model, args.inspect, device)
         print("Hidden states:", list(result['hidden_states'].keys()))
-
         print("block_0 shape:", result['hidden_states']['block_0'].shape)
         print("Attention layers:", len(result['attention_weights']))
         print("Layer 0 weights shape:", result['attention_weights'][0].shape)
         plot_attention_head(result, layer=7, head=0)
     else:
-        generate(model, max_new_tokens = args.tokens)
+        generate(model, max_new_tokens=args.tokens)

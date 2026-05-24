@@ -5,7 +5,7 @@ from nanolens.model.ffwd import FeedForward
 
 
 class Block(nn.Module):
-    "Transformer Blocks : Communication dim, n_head : num of heads I want"
+    "Transformer Blocks (layers in transformer) : Communication dim, n_head : num of heads I want"
 
     def __init__(self, n_embd, n_head):
         super().__init__()

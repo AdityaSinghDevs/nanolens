@@ -46,9 +46,13 @@ def estimate_loss(model):
     model.train()
     return out
 
-def trainer():
+def trainer(start_iter=0, checkpoint_path=None):
     
     model = TransformerModel().to(device)
+
+    if checkpoint_path:
+        model.loadd_state_dict(torch.load(checkpoint_path, map_location=device))
+        print(f"Resumec from {checkpoint_path}")
     optimizer = build_optim(model, learning_rate, weight_decay)
 
     print("Everything sticked together well, Training Started..")
