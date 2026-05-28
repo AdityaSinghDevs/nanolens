@@ -323,10 +323,9 @@ python cli.py --checkpoint checkpoints/nanolens_v1.pt
 
 Checkpoint details: 8 layers, 8 heads, 512 embedding dim, trained for 5000 steps on 4.4M characters of Dostoevsky. Final val loss 1.1144.
 > Size : ~113MB
-
 ---
 
-## What's Next
+## What's Next ?
 
 Pending work on NanoLens:
 
