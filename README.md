@@ -1,5 +1,7 @@
 # NanoLens
 
+
+
 ```        
 
                `7MN.   `7MF'                           `7MMF'                                  
@@ -34,6 +36,22 @@ This project began as an implementation of Andrej Karpathy's nanoGPT and evolved
 ---
 
 ## Motivation
+
+
+```
+                                                 __
+                                                 ||
+                                                ====
+                                                |  |__
+                                                |  |-.\
+                                                |__|  \\
+                                                 ||   ||
+                                               ======__|
+                                              ________||__
+                                             /____________\
+```
+
+
 
 There is a specific kind of frustration that comes from using a system you do not fully understand. You can prompt it, fine-tune it, benchmark it, and deploy it. But if someone asks you what it is actually doing, the honest answer is usually "I am not sure."
 
@@ -304,7 +322,7 @@ python cli.py --checkpoint checkpoints/nanolens_v1.pt
 ```
 
 Checkpoint details: 8 layers, 8 heads, 512 embedding dim, trained for 5000 steps on 4.4M characters of Dostoevsky. Final val loss 1.1144.
-> Size : ~111MB
+> Size : ~113MB
 
 ---
 
@@ -329,3 +347,4 @@ Pending work on NanoLens:
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
+---
