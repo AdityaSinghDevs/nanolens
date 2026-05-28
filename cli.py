@@ -5,7 +5,7 @@ from nanolens.training.trainer import trainer, load_model
 from nanolens.inference.generate import generate
 from nanolens.analysis.inspector import inspect
 from nanolens.data.loader import get_device
-from nanolens.analysis.visualize import plot_attention_head
+from nanolens.analysis.visualize import plot_all_heads
 
 
 CHECKPOINT = Path("checkpoints/model.pt")
@@ -42,10 +42,10 @@ if __name__ == "__main__":
 
     if args.inspect:
         result = inspect(model, args.inspect, device)
-        print("Hidden states:", list(result['hidden_states'].keys()))
-        print("block_0 shape:", result['hidden_states']['block_0'].shape)
-        print("Attention layers:", len(result['attention_weights']))
-        print("Layer 0 weights shape:", result['attention_weights'][0].shape)
-        plot_attention_head(result, layer=7, head=0)
+
+        print(f"Tokens: {len(result['tokens'])}")
+        print(f"Layers captured : {len(result['attention_weights'])}")
+        print(f"Layer 0 shape: {result['attention_weights'][0].shape}")
+        plot_all_heads(result)
     else:
         generate(model, max_new_tokens=args.tokens)

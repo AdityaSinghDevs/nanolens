@@ -51,12 +51,12 @@ def trainer(start_iter=0, checkpoint_path=None):
     model = TransformerModel().to(device)
 
     if checkpoint_path:
-        model.loadd_state_dict(torch.load(checkpoint_path, map_location=device))
-        print(f"Resumec from {checkpoint_path}")
+        model.load_state_dict(torch.load(checkpoint_path, map_location=device))
+        print(f"Resuming from step{start_iter}, {checkpoint_path}")
     optimizer = build_optim(model, learning_rate, weight_decay)
 
     print("Everything sticked together well, Training Started..")
-    for iter in range(max_iters):
+    for iter in range(start_iter, max_iters):
         lr = get_lr(iter)
         for param_group in optimizer.param_groups:
             param_group['lr'] = lr
