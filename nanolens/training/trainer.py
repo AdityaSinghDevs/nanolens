@@ -80,7 +80,7 @@ def trainer(start_iter=0, checkpoint_path=None):
     return model
 
 def save_checkpoint(model, iter):
-    name = f"gpt_L{n_layer}_H{n_head}_E{n_embd}_{iter}.pt"
+    name = f"nanolens{n_layer}_H{n_head}_E{n_embd}_{iter}.pt"
 
     local_path = Path("checkpoints")/name
     local_path.parent.mkdir(exist_ok=True)
