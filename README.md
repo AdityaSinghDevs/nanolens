@@ -228,9 +228,7 @@ Vertical stripes at space characters. Every token in the sequence attends strong
 
 The entire left column is lit. Nearly every token routes strong attention back to the first character of the sequence. The first token functions as a global information sink, accumulating sequence-level context that individual tokens can query. Its presence across multiple layers (5 and 6) suggests this is a stable, load-bearing circuit in this model, not a one-off pattern.
 
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H6.png" width="48%">
-
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H3.png" width="48%">
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H6.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H3.png" width="48%">
 
 
 *Left: L5_H6 — BOS sink at layer 5. Right: L6_H3 — BOS sink persisting at layer 6, confirming it as a stable circuit.*
