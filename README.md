@@ -193,9 +193,7 @@ Across 64 attention heads, the following functional types have been identified:
 A near-perfect sub-diagonal stripe: every token attends almost exclusively to the token immediately before it. This head has learned to propagate local sequence order with high precision. Previous token heads are among the most well-documented head types in interpretability literature, and their presence in layer 0 confirms that local sequential structure is the first thing this model learns.
 
 <div align="center">
-
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H2.png" width="48%">
-
 </div>
 
 *L0_H2 — previous token head, near-perfect sub-diagonal.*
@@ -207,9 +205,7 @@ A near-perfect sub-diagonal stripe: every token attends almost exclusively to th
 The brightest attention is on the diagonal (self), with a soft backward wedge fading into recent history. This head preserves a token's own identity while maintaining a short contextual window. Distinct from the previous token head: this one says "I matter most, but I remember where I came from."
 
 <div align="center">
-
- <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H0.png" width="48%">
- 
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H0.png" width="48%">
 </div>
 
 *L0_H0 — self + local context, diagonal with soft backward wedge.*
@@ -220,11 +216,9 @@ The brightest attention is on the diagonal (self), with a soft backward wedge fa
 
 Vertical stripes at space characters. Every token in the sequence attends strongly to the space that precedes its word. This head has learned that spaces are structural boundaries and uses them as positional anchors, which is a remarkable finding for a character-level model with no explicit notion of words. A more selective version appears at `L5_H5`, attending specifically to syntactically meaningful boundaries like the comma and the space before a verb.
 
-<div align="center>
 
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L1_H5.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H5.png" width="48%">
 
-</div>
 
 *Left: L1_H5 — broad space/boundary head, vertical stripes at every word boundary. Right: L5_H5 — selective boundary head, syntactically meaningful positions only.*
 
@@ -235,9 +229,7 @@ Vertical stripes at space characters. Every token in the sequence attends strong
 The entire left column is lit. Nearly every token routes strong attention back to the first character of the sequence. The first token functions as a global information sink, accumulating sequence-level context that individual tokens can query. Its presence across multiple layers (5 and 6) suggests this is a stable, load-bearing circuit in this model, not a one-off pattern.
 
 <div align="center>
-
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H6.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H3.png" width="48%">
-
 </div>
 
 *Left: L5_H6 — BOS sink at layer 5. Right: L6_H3 — BOS sink persisting at layer 6, confirming it as a stable circuit.*
@@ -249,9 +241,7 @@ The entire left column is lit. Nearly every token routes strong attention back t
 No diagonal. Sparse, non-local, high-contrast hits at semantically meaningful positions. These heads are no longer tracking sequence order. They are routing information based on learned abstract features. By layer 6, attention has moved from "what came before me" to "what is relevant to me."
 
 <div align="center>
-
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H2.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L7_H1.png" width="48%">
-
 </div>
 
 *Left: L6_H2 — sparse semantic routing emerging at layer 6. Right: L7_H1 — fully abstract routing at layer 7, diagonal completely absent.*
@@ -263,9 +253,7 @@ No diagonal. Sparse, non-local, high-contrast hits at semantically meaningful po
 Soft, broadly distributed attention across many positions with no dominant pattern. Low-contrast, high-entropy. This head may be performing something like context averaging rather than focused retrieval, a counterpoint to the sparse routing heads in the same layer.
 
 <div align="center>
-
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L7_H7.png" width="48%">
-
 </div>
 
 *L7_H7 — high entropy diffuse head, attention distributed broadly with no dominant structure.*
