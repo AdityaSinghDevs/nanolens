@@ -22,7 +22,13 @@ itos = {i:ch for i,ch in enumerate(chars)}
 encode = lambda s: [stoi[c] for c in s]
 decode = lambda l: ''.join([itos[i] for i in l])
 
+def token_list_save(chars=chars):
+    for c in chars:
+        tok_id = stoi[c]
+        print(f"Token : {c} -> Token id : {tok_id}")
+
 if __name__ == "__main__":
     print(f"Total characters: {len(text):,}")
     print(f"Vocab size: {vocab_size}")
-    print(f"Sample (first 200 chars):\n{text[:200]}")
+    # print(f"Sample (first 200 chars):\n{text[:200]}")
+    token_list_save()
