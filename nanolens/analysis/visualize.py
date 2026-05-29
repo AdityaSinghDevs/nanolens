@@ -104,15 +104,15 @@ def plot_hidden_state_norms(result, positions, labels, output_dir="results/hidde
 
     ax1.set_ylabel('Hidden State Norm', fontsize=11)
     ax1.set_title('Token Representation Magnitude Across Layers', fontsize=12)
-    ax1.set_xticks(range(n_layer))
+    ax1.set_xticks(range(n_layer), labels=range(1, n_layer + 1))
     ax1.yaxis.set_major_locator(plt.MultipleLocator(3))
     ax1.grid(True, alpha=0.3)
     ax1.legend()
 
-    ax2.set_xlabel('Layer', fontsize=11)
+    ax2.set_xlabel('Layer(1-indexed)', fontsize=11)
     ax2.set_ylabel('Norm Delta', fontsize=11)
     ax2.set_title('Per-Layer Norm Change (how much work done at each layer)', fontsize=10)
-    ax2.set_xticks(range(n_layer))
+    ax2.set_xticks(range(n_layer), labels=range(1, n_layer + 1))
     ax2.axhline(y=0, color='black', linewidth=0.8)
     ax2.grid(True, alpha=0.3)
     ax2.legend()
