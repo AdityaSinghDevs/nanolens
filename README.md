@@ -68,7 +68,7 @@ A 25-million parameter character-level auto-regressive transformer that:
 - Generates text with authentic Dostoevsky texture, correct character names, philosophical register, and dramatic sentence structure
 - Exposes its internal attention patterns and hidden states through dual-mechanism inspection
 - Has documented functional specialisation across its 64 attention heads (8 layers x 8 heads)
-- Serves as active interpretability research infrastructure, with ongoing work on hidden state norm analysis and attention entropy metrics
+- Serves as active interpretability research infrastructure, completed hidden state norm analysis revealing layer-wise representation dynamics.
 
 ---
 
