@@ -310,6 +310,10 @@ git clone https://github.com/AdityaSinghDevs/nanolens
 cd nanolens
 pip install -r requirements.txt
 ```
+**Verify everything is wired correctly before training**
+```
+python cli.py -d
+```
 
 **Train from scratch:**
 ```bash
