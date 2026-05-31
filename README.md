@@ -178,96 +178,100 @@ Both mechanisms run in a single call to `inspect()`, returning:
 
 > **Epistemic note**: These findings are from a single trained checkpoint on a single prompt. They are directional and exploratory, presented as observations from a character-level model and not as claims about transformers in general. The patterns are consistent with prior interpretability literature, which lends them credibility, but further experiments are needed before stronger claims can be made.
 
+> **Full classification grid, deep layer analysis, literature connections, anomalies, and what would strengthen these claims: [research_findings/attention_circuit_analysis.md](research_findings/attention_circuit_analysis.md)**
+
+---
+
 ### The Headline Finding
 
-**Early layers encode local sequential structure. Late layers perform abstract semantic routing.** This gradient is visible in the raw heatmap grid without opening a single individual image. Layers 0-2 are almost entirely diagonal. Layers 5-7 are sparse and non-local. The model builds its understanding of text from sequence order up to abstract meaning, layer by layer.
+**Early layers encode local sequential structure. Late layers perform abstract semantic routing.** The transition is not gradual in the way you might expect. Layer 3 is a convergence point where abstract routing commits across all 8 heads simultaneously, while local and global signals persist as secondaries. It is not a clean switch. It is a commit.
 
-### Documented Head Types
-
-Across 64 attention heads, the following functional types have been identified:
+From layer 3 onward, three circuit families run in parallel in every layer without exception: abstract routing, global aggregation, and boundary detection. The model does not pipeline these sequentially. It runs them together at every depth past the transition point.
 
 ---
 
-**Type 1 — Previous Token Head** `L0_H2`
+### Six Head Types Documented Across 64 Heads
 
-A near-perfect sub-diagonal stripe: every token attends almost exclusively to the token immediately before it. This head has learned to propagate local sequence order with high precision. Previous token heads are among the most well-documented head types in interpretability literature, and their presence in layer 0 confirms that local sequential structure is the first thing this model learns.
+**Previous Token Head** `L0_H6`
+
+A near-perfect sub-diagonal stripe running the full length of the sequence. Every token attends almost exclusively to the token immediately before it, consistent from position 1 to the final token without degradation. The model's first and most precisely learned behaviour. Previous token heads are documented in Elhage et al. 2021 as foundational components of the induction circuit.
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H2.png" width="48%">
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H6.png" width="45%">
 </div>
-
-*L0_H2 — previous token head, near-perfect sub-diagonal.*
 
 ---
 
-**Type 2 — Self + Local Context Head** `L0_H0`
+**Identity Preservation Head** `L0_H0`
 
-The brightest attention is on the diagonal (self), with a soft backward wedge fading into recent history. This head preserves a token's own identity while maintaining a short contextual window. Distinct from the previous token head: this one says "I matter most, but I remember where I came from."
+The brightest attention on the diagonal, every token attending most strongly to itself, with a soft backward wedge fading into recent history. The diagonal degrades progressively for later tokens, dissolving into broadly distributed attention by the final third of the sequence. This head appears exclusively in layer 0 with one secondary appearance in layer 1. Once contextual representations are built, the model has no further use for heads that attend primarily to the token itself.
 
 <div align="center">
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H0.png" width="48%">
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H0.png" width="45%">
 </div>
 
-*L0_H0 — self + local context, diagonal with soft backward wedge.*
+---
+
+**Word Boundary Head** `L1_H5`
+
+Vertical stripes of concentrated attention at space characters. Every token attends strongly to the space that precedes its word, producing a column pattern aligned precisely with word boundaries. A character-level model with no explicit notion of words has independently discovered word-level structure from statistical patterns alone. Notably, word boundary detection never centralises into a single dominant specialist across all 64 heads. It is present in every layer from 1 through 7 as a permanently distributed computation.
+
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L1_H5.png" width="44%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H5.png" width="44%">
+
+*Left: L1_H5, broad word boundary head attending to every space. Right: L5_H5, selective boundary head attending to syntactically meaningful spaces only. The same circuit type becomes more selective with depth.*
 
 ---
 
-**Type 3 — Word Boundary / Space Head** `L1_H5`
+**First Token Sink Head** `L5_H6`, `L6_H3`
 
-Vertical stripes at space characters. Every token in the sequence attends strongly to the space that precedes its word. This head has learned that spaces are structural boundaries and uses them as positional anchors, which is a remarkable finding for a character-level model with no explicit notion of words. A more selective version appears at `L5_H5`, attending specifically to syntactically meaningful boundaries like the comma and the space before a verb.
+The entire left column is lit. Nearly every token routes strong attention back to the first character of the sequence regardless of its own position. The first token functions as a global information sink, accumulating sequence-level context that individual tokens can query. This circuit follows a complete lifecycle across the model: weak background signal from layer 1, growing distributed presence through layers 2 to 4, crystallising into dedicated specialist heads at layers 5 and 6, then dispersing back to secondary status at layer 7. Global context aggregation is most active in the middle of the network, not at the end.
 
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H6.png" width="44%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H3.png" width="44%">
 
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L1_H5.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H5.png" width="48%">
-
-
-*Left: L1_H5 — broad space/boundary head, vertical stripes at every word boundary. Right: L5_H5 — selective boundary head, syntactically meaningful positions only.*
+*Left: L5_H6, first dedicated first token sink head. Right: L6_H3, strongest first token sink head in the model. Their presence across two consecutive layers confirms a stable load-bearing circuit.*
 
 ---
 
-**Type 4 — BOS / First Token Sink Head** `L5_H6`, `L6_H3`
+**Abstract Routing Head** `L4_H4`
 
-The entire left column is lit. Nearly every token routes strong attention back to the first character of the sequence. The first token functions as a global information sink, accumulating sequence-level context that individual tokens can query. Its presence across multiple layers (5 and 6) suggests this is a stable, load-bearing circuit in this model, not a one-off pattern.
+No diagonal. No vertical stripes. Sparse, high-contrast hits at specific non-local positions scattered across the heatmap, with the majority of cells near zero. This head is no longer tracking sequence order or structural boundaries. It is routing information based on learned abstract features, connecting tokens that share semantic or syntactic relevance regardless of distance. L4_H4 is notably the earliest layer where a strong unambiguous sparse head appears, suggesting abstract routing begins earlier in this model than the layer summary alone implies.
 
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H6.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H3.png" width="48%">
-
-
-*Left: L5_H6 — BOS sink at layer 5. Right: L6_H3 — BOS sink persisting at layer 6, confirming it as a stable circuit.*
-
----
-
-**Type 5 — Abstract Semantic Routing Head** `L6_H2`, `L7_H1`
-
-No diagonal. Sparse, non-local, high-contrast hits at semantically meaningful positions. These heads are no longer tracking sequence order. They are routing information based on learned abstract features. By layer 6, attention has moved from "what came before me" to "what is relevant to me."
-
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L6_H2.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L7_H1.png" width="48%">
-
-*Left: L6_H2 — sparse semantic routing emerging at layer 6. Right: L7_H1 — fully abstract routing at layer 7, diagonal completely absent.*
+<div align="center">
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L4_H4.png" width="45%">
+</div>
 
 ---
 
-**Type 6 — High Entropy / Diffuse Head** `L7_H7`
+**Extended Lookback Head** `L2_H1`
 
-Soft, broadly distributed attention across many positions with no dominant pattern. Low-contrast, high-entropy. This head may be performing something like context averaging rather than focused retrieval, a counterpoint to the sparse routing heads in the same layer.
+A previous token pattern where the brightest attention sits not one step back but two to three positions back, producing a sub-diagonal stripe offset further from the main diagonal than standard previous token heads. This head extends the local context window beyond single-step lookback. Its position at layer 2, the final layer before the layer 3 convergence, is the key observation. The model widens its local receptive field immediately before committing to abstract routing.
 
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L7_H7.png" width="48%">
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L0_H6.png" width="44%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L2_H3.png" width="44%">
 
-*L7_H7 — high entropy diffuse head, attention distributed broadly with no dominant structure.*
+*Left: L0_H6, standard previous token head, one step back. Right: L2_H3, extended lookback head, two to three steps back. The stripe moves further from the main diagonal.*
 
 ---
 
-### Layer Distribution
+### Layer Summary
 
-| Layer | Dominant Type |
-|---|---|
-| 0 | Local sequence (diagonal), all 8 heads |
-| 1 | Local sequence with boundary detection emerging |
-| 2 | Transitional, diagonal breaking into chunks |
-| 3 | Transitional, local giving way to structured patterns |
-| 4 | Mixed, mid-layer refinement and word-level chunking |
-| 5 | Mixed, BOS sink and selective boundary heads appearing |
-| 6 | Abstract, BOS sink, semantic routing, sparse patterns |
-| 7 | Abstract, semantic routing and diffuse heads |
+| Layer | Dominant Type | Character |
+|---|---|---|
+| 0 | Previous token, identity preservation | Pure local, first and most precise behaviours |
+| 1 | Previous token, boundary detection emerging | Local with first word boundary signal |
+| 2 | Previous token transitioning, extended lookback | Local widening before the transition |
+| 3 | Abstract routing across all 8 heads | Convergence point, the commit layer |
+| 4 | Abstract routing, BOS sink emerging | Abstract dominant, aggregation building |
+| 5 | Abstract routing, BOS sink fully formed | Three circuit families running in parallel |
+| 6 | Abstract routing, BOS sink peak | Strongest first token sink heads in the model |
+| 7 | Abstract routing across all 8 heads | Most functionally committed layer in the model |
 
+---
+---
+
+***For the full classification of all 64 heads, deep analysis of each finding, literature connections to Elhage et al., Clark et al., and Wang et al., documented anomalies, and the experiments that would move these observations to defensible claims, read the full analysis:***
+[research_findings/attention_circuit_analysis.md](research_findings/attention_circuit_analysis.md)
+
+---
 ---
 ### Hidden State Norm Analysis
 

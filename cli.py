@@ -5,7 +5,7 @@ from nanolens.training.trainer import trainer, load_model
 from nanolens.inference.generate import generate
 from nanolens.analysis.inspector import inspect
 from nanolens.data.loader import get_device
-from nanolens.analysis.visualize import plot_all_heads, plot_hidden_state_norms
+from nanolens.analysis.visualize import plot_all_heads, plot_hidden_state_norms, plot_cosine_similarity, plot_norm_deltas
 
 
 CHECKPOINT = Path("checkpoints/model.pt")
@@ -102,24 +102,40 @@ if __name__ == "__main__":
     else:
         if args.resume:
             model = trainer(start_iter=args.resume, checkpoint_path=args.checkpoint)
-    
+
         elif args.checkpoint:
             model = load_model(args.checkpoint)
-            
+
         else:
             model = trainer()
-    
+
         if args.inspect:
             result = inspect(model, args.inspect, device)
-    
+
             print(f"Tokens: {len(result['tokens'])}")
             print(f"Layers captured : {len(result['attention_weights'])}")
             print(f"Layer 0 shape: {result['attention_weights'][0].shape}")
-    
+
             if args.attention_weights:
                 plot_all_heads(result)
             if args.hidden_states:
-                plot_hidden_state_norms(result, positions=[0,11,12,38,59], labels=['R','space','h',',','.'])
-    
+                plot_hidden_state_norms(
+                    result,
+                    positions=[0, 11, 28, 49, 38, 59],
+                    labels=['R', 'space1', 'space3', 'space5', ',', '.'],
+                    title='Structural Token Norm Trajectories Across Layers',
+                    filename='norm_trajectory_structural.png'
+                )
+
+                plot_hidden_state_norms(
+                    result,
+                    positions=[0, 12, 37, 11],
+                    labels=['R', 'h', 'd', 'space1'],
+                    title='Content Token Norm Trajectories Across Layers',
+                    filename='norm_trajectory_content.png'
+                )
+                plot_norm_deltas(result, positions=[0, 11, 28, 49, 12, 37, 38, 59], labels=['R', 'space1', 'space3', 'space5', 'h', 'd', ',', '.'])
+                plot_cosine_similarity(result, positions=[0, 11, 28, 49, 12, 37, 38, 59], labels=['R', 'space1', 'space3', 'space5', 'h', 'd', ',', '.'])
+
         else:
             generate(model, max_new_tokens=args.tokens)

@@ -1,6 +1,8 @@
 import torch
+import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import seaborn as sns
+import numpy as np
 from pathlib import Path
 
 from nanolens.data.tokenizer import decode
@@ -56,7 +58,7 @@ def plot_all_heads(result, output_dir = "results/attention"):
     print(f"Done. All heads saved to {output_dir}/ successfully")
 
 
-def plot_hidden_state_norms(result, positions, labels, output_dir="results/hidden_states"):
+def plot_hidden_state_norms(result, positions, labels, title, filename, output_dir="results/hidden_states"):
     from utils.config_loader import load_configs
     cfg = load_configs("default")
     n_layer = cfg["hyperparameters"]["n_layer"]
@@ -64,13 +66,11 @@ def plot_hidden_state_norms(result, positions, labels, output_dir="results/hidde
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 11), 
-                                    gridspec_kw={'height_ratios': [2, 1]})
-
     punct = [',', '.']
-    all_norms =[]
-    bar_width = 0.15
-    
+    all_norms = []
+
+    fig, ax1 = plt.subplots(figsize=(14, 8))
+
     for i, pos in enumerate(positions):
         norms = []
         for n in range(n_layer):
@@ -78,23 +78,17 @@ def plot_hidden_state_norms(result, positions, labels, output_dir="results/hidde
             norm = torch.norm(hidden_state).item()
             norms.append(norm)
         all_norms.append(norms)
-        
-        sizes = [40]
+
+        sizes = [30]
         for n in range(1, n_layer):
             delta = abs(norms[n] - norms[n-1])
-            sizes.append(40 + delta * 3)
+            sizes.append(30 + delta * 2)
 
         linestyle = '--' if labels[i] in punct else '-'
-        line, =ax1.plot(range(n_layer), norms, marker='o', 
-                label=labels[i], linewidth=2, linestyle=linestyle)
-
-        ax1.scatter(range(n_layer), norms, s=sizes, color=line.get_color(), zorder=5)
-
-        # delta bars on ax2
-        deltas = [0] + [all_norms[i][n] - all_norms[i][n-1] for n in range(1, n_layer)]
-        x_positions = [n + (i - len(positions)/2) * bar_width for n in range(n_layer)]
-        ax2.bar(x_positions, deltas, width=bar_width, 
-                label=labels[i], color=line.get_color(), alpha=0.7)
+        line, = ax1.plot(range(1, n_layer + 1), norms, marker='o',
+                         label=labels[i], linewidth=2.5, linestyle=linestyle)
+        ax1.scatter(range(1, n_layer + 1), norms, s=sizes,
+                   color=line.get_color(), zorder=5, alpha=0.7)
 
     ax1.text(0.99, 0.02,
              f'prompt: "{result["prompt"]}"',
@@ -102,22 +96,103 @@ def plot_hidden_state_norms(result, positions, labels, output_dir="results/hidde
              fontsize=8, color='grey',
              ha='right', va='bottom', style='italic')
 
-    ax1.set_ylabel('Hidden State Norm', fontsize=11)
-    ax1.set_title('Token Representation Magnitude Across Layers', fontsize=12)
-    ax1.set_xticks(range(n_layer), labels=range(1, n_layer + 1))
-    ax1.yaxis.set_major_locator(plt.MultipleLocator(3))
-    ax1.grid(True, alpha=0.3)
-    ax1.legend()
-
-    ax2.set_xlabel('Layer(1-indexed)', fontsize=11)
-    ax2.set_ylabel('Norm Delta', fontsize=11)
-    ax2.set_title('Per-Layer Norm Change (how much work done at each layer)', fontsize=10)
-    ax2.set_xticks(range(n_layer), labels=range(1, n_layer + 1))
-    ax2.axhline(y=0, color='black', linewidth=0.8)
-    ax2.grid(True, alpha=0.3)
-    ax2.legend()
+    ax1.set_ylabel('Hidden State Norm', fontsize=15)
+    ax1.set_title(title, fontsize=15)
+    ax1.tick_params(axis='both', labelsize=13)
+    ax1.set_xticks(range(1, n_layer + 1))
+    ax1.set_xlim(0.5, n_layer + 0.5)
+    ax1.yaxis.set_major_locator(plt.MultipleLocator(6))
+    ax1.grid(True, alpha=0.2)
+    ax1.legend(loc='upper left', fontsize=12, framealpha=0.6)
 
     plt.tight_layout()
-    filename = out_path / "norm_plot_delta.png"
+    save_path = out_path / filename
+    plt.savefig(save_path, dpi=150)
+    print(f"Norm trajectory saved → {save_path}")
+    plt.close()
+
+
+def plot_norm_deltas(result, positions, labels, output_dir="results/hidden_states"):
+    from utils.config_loader import load_configs
+    cfg = load_configs("default")
+    n_layer = cfg["hyperparameters"]["n_layer"]
+
+    out_path = Path(output_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    bar_width = 0.1
+    fig, ax2 = plt.subplots(figsize=(20, 7))
+
+    for i, pos in enumerate(positions):
+        norms = []
+        for n in range(n_layer):
+            hidden_state = result['hidden_states'][f'block_{n}'][0, pos, :]
+            norm = torch.norm(hidden_state).item()
+            norms.append(norm)
+
+        deltas = [0] + [norms[n] - norms[n-1] for n in range(1, n_layer)]
+        x_positions = [n + 1 + (i - len(positions)/2) * bar_width 
+                       for n in range(n_layer)]
+        ax2.bar(x_positions, deltas, width=bar_width, label=labels[i], alpha=0.75)
+
+    ax2.set_xlabel('Layer (1-indexed)', fontsize=15)
+    ax2.set_ylabel('Norm Delta', fontsize=15)
+    ax2.set_title('Per-Layer Norm Change (how much work done at each layer)', fontsize=14)
+    ax2.tick_params(axis='both', labelsize=13)
+    ax2.set_xticks(range(1, n_layer + 1), labels=range(1, n_layer + 1))
+    ax2.set_xlim(0.3, n_layer + 0.7)
+    ax2.axhline(y=0, color='black', linewidth=0.9)
+    ax2.grid(True, alpha=0.2)
+    ax2.legend(loc='upper right', fontsize=11, framealpha=0.6, ncol=2)
+
+    plt.tight_layout()
+    filename = out_path / "norm_deltas.png"
     plt.savefig(filename, dpi=150)
-    print(f"Norm plot saved → {filename}")
+    print(f"Norm deltas saved → {filename}")
+    plt.close()
+
+
+def plot_cosine_similarity(result, positions, labels, output_dir="results/hidden_states"):
+    from utils.config_loader import load_configs
+    cfg = load_configs("default")
+    n_layer = cfg["hyperparameters"]["n_layer"]
+
+    out_path = Path(output_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    sims = []
+    for i in range(n_layer - 1):
+        layer_sims = []
+        for pos in positions:
+            a = result['hidden_states'][f'block_{i}'][0, pos, :]
+            b = result['hidden_states'][f'block_{i+1}'][0, pos, :]
+            sim = F.cosine_similarity(a.unsqueeze(0), b.unsqueeze(0)).item()
+            layer_sims.append(sim)
+        sims.append(layer_sims)
+
+    sims = np.array(sims)
+
+    fig, ax = plt.subplots(figsize=(16, 8))
+    sns.heatmap(
+        sims,
+        xticklabels=labels,
+        yticklabels=[f'L{i+1}→L{i+2}' for i in range(n_layer - 1)],
+        cmap='RdYlGn',
+        vmin=float(np.array(sims).min()) - 0.2,
+        vmax=1.0,
+        annot=True,
+        fmt='.2f',
+        ax=ax,
+        linewidths=0.5,
+        linecolor='grey'
+    )
+    ax.set_title(f'Layer-to-Layer Cosine Similarity per Token\n"{result["prompt"]}"',
+                 fontsize=14)
+    ax.set_xlabel('Token', fontsize=13)
+    ax.set_ylabel('Layer Transition', fontsize=13)
+    plt.tight_layout()
+
+    filename = out_path / "cosine_similarity.png"
+    plt.savefig(filename, dpi=150)
+    print(f"Cosine similarity plot saved → {filename}")
+    plt.close()

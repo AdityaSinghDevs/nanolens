@@ -530,3 +530,20 @@ patching experiments. Replacing activations from one forward pass with those fro
 another mid-computation would establish causal relationships between heads that visual 
 classification cannot confirm. This is the methodological step that separates 
 observation from mechanism and is the primary direction for PRISMA.
+
+## 10. Closing Note
+
+NanoLens was built to answer one question: what is a transformer actually doing when 
+it processes text? This document is the most direct answer that a 25 million parameter 
+character-level model trained on Dostoevsky can provide.
+
+The findings here are exploratory. They are observations from one model, one prompt, 
+one checkpoint. But they are grounded in the data, consistent with prior literature 
+where comparable, and honest about where the evidence runs out.
+
+The inspection infrastructure built for NanoLens, dual-mechanism capture, attention 
+heatmaps, hidden state norm analysis, and the classification framework developed here, 
+forms the methodological foundation for future work. What those experiments look like 
+and what questions they answer is a problem for another project.
+
+This one is complete.
