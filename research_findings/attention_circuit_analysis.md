@@ -9,6 +9,13 @@ Full circuit tracing, meaning the identification of compositional relationships 
 Connections between these findings and hidden state analysis are 
 drawn in [research_findings/conclusions.md](conclusions.md).
 
+> **Layer Nomenclature**: This document uses 0-indexed layer numbering (Layer 0 through Layer 7), matching PyTorch internals and image filenames. Layer 0 corresponds to Layer 1 in the hidden state analysis.
+
+> **Literature connections** were identified with AI assistance. 
+The claims made about each cited work reflect the documented findings 
+of those papers to the best of the author's knowledge, but primary 
+sources should be consulted directly for full context.
+
 ## Head Type Definitions
 
 **Previous token heads :**  attention heads where every token attends almost exclusively to the token immediately before it, tracking local sequence order.
@@ -23,6 +30,21 @@ drawn in [research_findings/conclusions.md](conclusions.md).
 
 **Abstract routing heads :** heads with sparse, high-contrast, non-local attention patterns where tokens attend to semantically relevant positions regardless of distance.
 
+## What Is Being Measured
+
+Each attention heatmap shows a single head's attention weight matrix 
+for the inspected prompt. Rows are query positions (the token doing the 
+attending), columns are key positions (the tokens being attended to), 
+and colour intensity represents attention weight after softmax. Every 
+row sums to 1.0. The causal mask means the upper triangle is always 
+zero, no token can attend to future positions. Patterns in the lower 
+triangle are entirely learned.
+
+Heads were classified by visual inspection of all 64 heatmaps. 
+Secondary signals were noted where a clear secondary pattern was 
+visible alongside the dominant one. Classification is qualitative. 
+Quantitative confirmation via attention entropy metrics is listed under 
+what would strengthen these claims.
 
 ## 1. Headline Findings
 
