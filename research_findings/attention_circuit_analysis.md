@@ -6,6 +6,8 @@
 > This document classifies individual attention head behaviour and 
 identifies functional specialisation patterns across 64 heads. 
 Full circuit tracing, meaning the identification of compositional relationships between heads across layers, requires activation patching experiments.
+Connections between these findings and hidden state analysis are 
+drawn in [research_findings/conclusions.md](conclusions.md).
 
 ## Head Type Definitions
 
