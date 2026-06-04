@@ -1,6 +1,6 @@
 # NanoLens
 
-
+```
                   `7MN.   `7MF'                           `7MMF'                                  
                     MMN.    M                               MM                                    
                     M YMb   M  ,6"Yb.  `7MMpMMMb.  ,pW"Wq.  MM         .gP"Ya `7MMpMMMb.  ,pP"Ybd 
@@ -10,7 +10,7 @@
                   .JML.    YM `Moo9^Yo..JMML  JMML.`Ybmd9'.JMMmmmmMMM  `Mbmmd'.JMML  JMML.M9mmmP'
                             
                              mechanistic interpretability toolkit · built from scratch
-
+```
 > *A mechanistic interpretability toolkit built from scratch, because 
 > understanding transformers from the outside was never going to be enough.*
 
