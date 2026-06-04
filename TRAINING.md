@@ -538,4 +538,6 @@ For detailed methodology, findings from the pretrained checkpoint, and interpret
 - [research_findings/hidden_state_analysis.md](research_findings/hidden_state_analysis.md)
 - [research_findings/conclusions.md](research_findings/conclusions.md)
 
+**To change the characters and labels to be studied in norm, delta, cosine similarity plots, Manual editing the labels and positions of characters in prompt inside the cli.py is required**
+
 The documented findings from the 25M parameter Dostoevsky checkpoint serve as a reference for what patterns to look for when inspecting your own trained model. Different data and different architectures will produce different circuits. The classification framework and the dual-mechanism inspection approach transfer to any checkpoint trained with this codebase.
