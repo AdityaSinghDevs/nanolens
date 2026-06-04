@@ -18,14 +18,14 @@ Interpretability usage is covered in a dedicated section at the end.
   - [Parameter count formula](#parameter-count-formula)
   - [Scaling targets](#scaling-targets)
   - [What to change to scale up](#what-to-change-to-scale-up)
+  - [The Colab T4 ceiling](#the-colab-t4-ceiling)
+  - [How much data to scale with parameters](#how-much-data-to-scale-with-parameters)
   - [Theoretical Scaling Limits](#theoretical-scaling-limits)
     - [Constraint 1 — Data](#constraint-1--data)
     - [Constraint 2 — Optimization Stability](#constraint-2--optimization-stability)
     - [Constraint 3 — Tokenization Efficiency](#constraint-3--tokenization-efficiency)
     - [Constraint 4 — Hardware](#constraint-4--hardware)
     - [The Unified Estimate](#the-unified-estimate)
-  - [The Colab T4 ceiling](#the-colab-t4-ceiling)
-  - [How much data to scale with parameters](#how-much-data-to-scale-with-parameters)
 - [CLI Reference](#cli-reference)
   - [Dry run](#dry-run)
   - [Train from scratch](#train-from-scratch)
@@ -208,6 +208,33 @@ Increase n_embd from 512 to 640. Keep n_layer at 8. Keep n_head at 8 (head_size 
 
 Alternatively, keep n_embd at 512 and increase n_layer from 8 to 12. This gives approximately 38M parameters with the same width but more depth. The attention behaviour documented in the research findings will change because the layer distribution shifts.
 
+### The Colab T4 ceiling
+
+The current architecture uses approximately 12.7 GiB of T4 GPU memory during training. The T4 has 15 GiB total, leaving about 2 GiB headroom. The primary memory consumers are:
+
+- Activations stored for backpropagation: scales with batch_size, block_size, n_embd, and n_layer
+- Model parameters: scales with the formula above
+- Optimizer states: AdamW stores first and second moment estimates, approximately 2x parameter count in additional memory
+
+To push beyond the current ceiling on a T4, reduce batch_size first. Going from 128 to 64 frees significant activation memory and allows n_embd to increase to 640 or 768. Gradient accumulation can compensate for the smaller effective batch size.
+
+For architectures above approximately 60M parameters, upgrade to a Colab A100 (40 GiB) or use gradient checkpointing, which trades compute for memory by recomputing activations during backpropagation rather than storing them.
+
+### How much data to scale with parameters
+
+Using the 20 tokens per parameter guideline:
+
+| Target Parameters | Recommended Characters |
+|---|---|
+| 10M | 200M |
+| 25M (current) | 500M (current data is 4.4M, undertrained) |
+| 30M | 600M |
+| 40M | 800M |
+| 60M | 1.2B |
+
+NanoLens at 25M with 4.4M characters is approximately 100x undertrained relative to the Chinchilla recommendation. The model converges because Dostoevsky's repetitive prose provides dense signal, but a more diverse or larger dataset would produce a model with better generalisation. For your own domain, follow the recommended column.
+
+
 ## Theoretical Scaling Limits
 
 How far can NanoLens scale with its current training setup — 
@@ -355,32 +382,6 @@ optimization-limited in any fundamental sense. It is undertrained
 relative to Chinchilla recommendations, which means the primary 
 lever for improving the current checkpoint is more data, not more 
 parameters.
-
-### The Colab T4 ceiling
-
-The current architecture uses approximately 12.7 GiB of T4 GPU memory during training. The T4 has 15 GiB total, leaving about 2 GiB headroom. The primary memory consumers are:
-
-- Activations stored for backpropagation: scales with batch_size, block_size, n_embd, and n_layer
-- Model parameters: scales with the formula above
-- Optimizer states: AdamW stores first and second moment estimates, approximately 2x parameter count in additional memory
-
-To push beyond the current ceiling on a T4, reduce batch_size first. Going from 128 to 64 frees significant activation memory and allows n_embd to increase to 640 or 768. Gradient accumulation can compensate for the smaller effective batch size.
-
-For architectures above approximately 60M parameters, upgrade to a Colab A100 (40 GiB) or use gradient checkpointing, which trades compute for memory by recomputing activations during backpropagation rather than storing them.
-
-### How much data to scale with parameters
-
-Using the 20 tokens per parameter guideline:
-
-| Target Parameters | Recommended Characters |
-|---|---|
-| 10M | 200M |
-| 25M (current) | 500M (current data is 4.4M, undertrained) |
-| 30M | 600M |
-| 40M | 800M |
-| 60M | 1.2B |
-
-NanoLens at 25M with 4.4M characters is approximately 100x undertrained relative to the Chinchilla recommendation. The model converges because Dostoevsky's repetitive prose provides dense signal, but a more diverse or larger dataset would produce a model with better generalisation. For your own domain, follow the recommended column.
 
 ---
 
