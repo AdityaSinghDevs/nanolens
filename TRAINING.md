@@ -474,6 +474,16 @@ Checkpoint filenames encode the architecture used to create them. Always load a 
 
 The pretrained NanoLens v1.0 checkpoint is available at: [Releases](https://github.com/AdityaSinghDevs/nanolens/releases/tag/v1.0)
 
+Download it and save it inside `nanolens/checkpoints/`
+
+or 
+
+```mv nanolens_v1.pt checkpoints/nanolens_v1.pt
+python cli.py --checkpoint checkpoints/nanolens_v1.pt -g
+```
+
+**You might need to create the checkpoints folder first**
+
 
 ---
 

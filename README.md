@@ -72,16 +72,16 @@ is yours to use on your own trained model.
 - [License](#license)
 
 ## Motivation
-                                                   __
-                                                   ||
-                                                  ====
-                                                  |  |__
-                                                  |  |-.\
-                                                  |__|  \\
-                                                   ||   ||
-                                                 ======__|
-                                                ________||__
-                                               /____________\
+                                                       __
+                                                       ||
+                                                      ====
+                                                      |  |__
+                                                      |  |-.\
+                                                      |__|  \\
+                                                       ||   ||
+                                                     ======__|
+                                                    ________||__
+                                                   /____________\
 
 There is a specific kind of frustration that comes from using a 
 system you do not fully understand. You can prompt it, fine-tune it, 
@@ -99,6 +99,10 @@ That question is what NanoLens is built around. Building one from
 scratch was the only way to earn that understanding. Inspecting it 
 was the natural next step.
 
+This project began as an implementation of Andrej Karpathy's 
+[nanoGPT](https://github.com/karpathy/nanoGPT) and grew into something with its own research 
+direction.
+
 ---
 
 ## What NanoLens Is
@@ -107,7 +111,7 @@ A fully configurable character-level autoregressive transformer
 training suite with a mechanistic interpretability toolkit. 
 Concretely:
 
-- **Scale from under 10M to over 150M parameters and beyond** by editing one YAML config file — no hard parameter ceiling beyond hardware constraints
+- **Scale from under 10M to over 150M parameters and beyond,** by editing one YAML config file — no hard parameter ceiling beyond hardware constraints
   > Scale this to a billion parameters if you have the hardware. The architecture 
 imposes no ceiling. On a single Colab T4 the practical limit is approximately 
 40M parameters. On a Colab A100, approximately 150M. Beyond 150M, 
@@ -118,7 +122,7 @@ requirements by scale in [TRAINING.md](TRAINING.md).
 
 - **Train on any text corpus** by dropping `.txt` files into the 
   data directory
-- **Inspect all 64 attention heads** via pull-based attention weight 
+- **Inspect all attention heads** via pull-based attention weight 
   capture and push-based PyTorch hooks in a single forward pass
 - **Visualise hidden state norms and cosine similarity** across all 
   layers to track how token representations evolve with depth
@@ -142,7 +146,7 @@ account of one forward pass.
 **Students learning transformers** who want structured, modular, 
 well-documented code to study rather than a monolithic notebook. 
 Every component is separated, every decision is explained in 
-TRAINING.md.
+`TRAINING.md`.
 
 **Educators teaching mechanistic interpretability** who need a 
 simple model with known, documented circuit behaviour to demonstrate 
@@ -155,7 +159,7 @@ gives you a known model with documented circuit behaviour and public
 weights to validate against.
 
 **Anyone building character-level models** for specific domains — 
-music notation, source code, non-English text, biological sequences — 
+music notation, source code, non-English text, biological sequences,  
 who wants a complete training plus inspection pipeline in one place.
 
 ---
@@ -237,7 +241,7 @@ every component of a decoder-only transformer:
 - Per-layer norm delta plots
 - Layer-to-layer cosine similarity heatmaps
 - CLI with train, generate, inspect, resume, and dry-run modes
-- YAML-driven configuration with nothing hardcoded
+- YAML-driven configuration with almost nothing hardcoded
 
 ---
 
@@ -263,7 +267,7 @@ Quick reference:
 The practical ceiling on a single T4 is approximately 40M 
 parameters. With a Colab A100, the architecture scales to 
 approximately 150M parameters before character-level tokenisation 
-becomes the quality ceiling. Full scaling analysis in TRAINING.md.
+becomes the quality ceiling. Full scaling analysis in `TRAINING.md`.
 
 ---
 
@@ -322,6 +326,8 @@ and the transition is not gradual. Layer 3 is a convergence point
 where abstract routing commits across all 8 heads simultaneously 
 while local and global signals persist as secondaries. It is not 
 a clean switch. It is a commit.**
+
+Every primary head types except locals, starts of as a secondary signal before commiting as primary signals in upcoming layers.
 
 From layer 3 onward, three circuit families run in parallel in 
 every layer without exception: abstract routing, global aggregation, 
@@ -489,7 +495,7 @@ heatmap. All values above 0.93 — the model changes direction far
 less than it changes magnitude. R shows 1.00 across three 
 consecutive middle-layer transitions.*
 
-Key findings from the hidden state analysis:
+### Key findings from the hidden state analysis:
 
 **R dominates from layer 1 and redistributes at layer 7.** R 
 starts with the highest norm of all tracked tokens and peaks at 
