@@ -130,9 +130,9 @@ From layer 3 onward three circuit families run in parallel in every layer withou
 
 **What the attention data shows:** Punctuation separator heads appear as secondary signal in exactly two layers, 3 and 4 (0-indexed), and nowhere else. This narrow mid-network window suggests punctuation-as-boundary is a transitional computation, active specifically during the shift from local to abstract processing.
 
-<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L3_H3.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L4_H3.png" width="48%">
+<img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L4_H3.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H4.png" width="48%">
 
-*Left: L3_H3, punctuation separator behaviour appearing as secondary at layer 3. Right: L4_H3, the same secondary signal persisting at layer 4 before disappearing entirely from layer 5 onward.*
+*Left: L4_H3, punctuation separator behaviour appearing as secondary at layer 4. Right: L5_H4, the same secondary signal persisting at layer 4 before disappearing entirely from layer 5 onward.*
 
 **What the hidden state data shows:** Comma and period show two distinct phases. They start at layer 0 with anomalously high norm relative to content tokens, track slowly through the middle layers, then spike sharply at layers 6 and 7 (0-indexed). The norm delta for comma and period at the final layer is the largest delta of any token at any layer in the entire analysis.
 
@@ -167,8 +167,6 @@ From layer 3 onward three circuit families run in parallel in every layer withou
 **The extended lookback finding has no hidden state counterpart.** The attention analysis identifies extended lookback heads at layer 2 attending two to three positions back, and interprets this as the model widening its local context window before the layer 3 transition. The hidden state analysis has no measurement that directly confirms or contradicts this interpretation. R's high norm delta at layer 2 is consistent with intense local processing, but whether extended lookback heads are causally responsible for that delta cannot be established from these two analyses alone.
 
 **The identity preservation degradation has no norm equivalent.** L0_H0 shows a clear within-head degradation pattern where the diagonal fades for later token positions. The norm analysis does not track enough tokens at positions where this degradation would be visible to confirm whether it corresponds to different norm trajectories for early versus late positions. This is a gap in the token selection rather than a contradiction between the analyses.
-
-
 
 **The cosine similarity spike at the final transition has no clear attention explanation.** The hidden state analysis shows the final layer transition producing the largest directional reorientation of any middle-layer transition. The attention analysis describes layer 7 as the most committed layer. But why a highly committed attention layer produces more representational reorientation rather than less is not explained by either analysis. This is the gap most worth investigating.
 
