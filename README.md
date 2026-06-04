@@ -2,16 +2,15 @@
 
 ```
 
-
-                 `7MN.   `7MF'                           `7MMF'                                  
-                   MMN.    M                               MM                                    
-                   M YMb   M  ,6"Yb.  `7MMpMMMb.  ,pW"Wq.  MM         .gP"Ya `7MMpMMMb.  ,pP"Ybd 
-                   M  `MN. M 8)   MM    MM    MM 6W'   `Wb MM        ,M'   Yb  MM    MM  8I   `" 
-                   M   `MM.M  ,pm9MM    MM    MM 8M     M8 MM      , 8M""""""  MM    MM  `YMMMa. 
-                   M     YMM 8M   MM    MM    MM YA.   ,A9 MM     ,M YM.    ,  MM    MM  L.   I8 
-                 .JML.    YM `Moo9^Yo..JMML  JMML.`Ybmd9'.JMMmmmmMMM  `Mbmmd'.JMML  JMML.M9mmmP'
-                           
-                            mechanistic interpretability toolkit · built from scratch
+                `7MN.   `7MF'                           `7MMF'                                  
+                  MMN.    M                               MM                                    
+                  M YMb   M  ,6"Yb.  `7MMpMMMb.  ,pW"Wq.  MM         .gP"Ya `7MMpMMMb.  ,pP"Ybd 
+                  M  `MN. M 8)   MM    MM    MM 6W'   `Wb MM        ,M'   Yb  MM    MM  8I   `" 
+                  M   `MM.M  ,pm9MM    MM    MM 8M     M8 MM      , 8M""""""  MM    MM  `YMMMa. 
+                  M     YMM 8M   MM    MM    MM YA.   ,A9 MM     ,M YM.    ,  MM    MM  L.   I8 
+                .JML.    YM `Moo9^Yo..JMML  JMML.`Ybmd9'.JMMmmmmMMM  `Mbmmd'.JMML  JMML.M9mmmP'
+                          
+                           mechanistic interpretability toolkit · built from scratch
 ```
 > *A mechanistic interpretability toolkit built from scratch, because 
 > understanding transformers from the outside was never going to be enough.*
@@ -76,16 +75,16 @@ is yours to use on your own trained model.
 
 ## Motivation
 ```
-                                                     __
-                                                     ||
-                                                    ====
-                                                    |  |__
-                                                    |  |-.\
-                                                    |__|  \\
-                                                     ||   ||
-                                                   ======__|
-                                                  ________||__
-                                                 /____________\
+                                                 __
+                                                 ||
+                                                ====
+                                                |  |__
+                                                |  |-.\
+                                                |__|  \\
+                                                 ||   ||
+                                               ======__|
+                                              ________||__
+                                             /____________\
 ```
 
 There is a specific kind of frustration that comes from using a 
