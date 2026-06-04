@@ -5,7 +5,42 @@ This document covers everything needed to train your own NanoLens model from scr
 Interpretability usage is covered in a dedicated section at the end.
 
 ---
+## Table of Contents
 
+- [Quick Setup](#quick-setup)
+- [Your Data](#your-data)
+  - [How much data do you need?](#how-much-data-do-you-need)
+  - [Data quality matters more than quantity at small scale](#data-quality-matters-more-than-quantity-at-small-scale)
+- [Configuration](#configuration)
+  - [Hyperparameter guide](#hyperparameter-guide)
+- [The Learning Rate Schedule](#the-learning-rate-schedule)
+- [Scaling the Architecture](#scaling-the-architecture)
+  - [Parameter count formula](#parameter-count-formula)
+  - [Scaling targets](#scaling-targets)
+  - [What to change to scale up](#what-to-change-to-scale-up)
+  - [Theoretical Scaling Limits](#theoretical-scaling-limits)
+    - [Constraint 1 — Data](#constraint-1--data)
+    - [Constraint 2 — Optimization Stability](#constraint-2--optimization-stability)
+    - [Constraint 3 — Tokenization Efficiency](#constraint-3--tokenization-efficiency)
+    - [Constraint 4 — Hardware](#constraint-4--hardware)
+    - [The Unified Estimate](#the-unified-estimate)
+  - [The Colab T4 ceiling](#the-colab-t4-ceiling)
+  - [How much data to scale with parameters](#how-much-data-to-scale-with-parameters)
+- [CLI Reference](#cli-reference)
+  - [Dry run](#dry-run)
+  - [Train from scratch](#train-from-scratch)
+  - [Resume from checkpoint](#resume-from-checkpoint)
+  - [Generate from checkpoint](#generate-from-checkpoint)
+  - [Inspect attention patterns](#inspect-attention-patterns)
+  - [Inspect hidden state norms](#inspect-hidden-state-norms)
+  - [Inspect both simultaneously](#inspect-both-simultaneously)
+  - [Full flag reference](#full-flag-reference)
+- [Checkpoints](#checkpoints)
+- [Training on Google Colab](#training-on-google-colab)
+  - [Colab memory management](#colab-memory-management)
+- [Interpretability Toolkit](#interpretability-toolkit)
+
+---
 ## Quick Setup
 
 ```bash
