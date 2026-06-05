@@ -45,6 +45,7 @@ The research infrastructure
 is yours to use on your own trained model.
 
 ---
+
 ## Table of Contents
 
 - [Motivation](#motivation)
@@ -65,6 +66,7 @@ is yours to use on your own trained model.
   - [Hidden State Analysis](#hidden-state-analysis--how-token-representations-evolve)
   - [What the Two Analyses Agree On](#what-the-two-analyses-agree-on)
   - [The Unified Account](#the-unified-account)
+  - [Limitations](#limitations)
 - [Generated Output](#generated-output)
 - [Quickstart](#quickstart)
 - [Weights](#weights)
@@ -72,6 +74,7 @@ is yours to use on your own trained model.
 - [If You Use This](#if-you-use-this)
 - [References](#references)
 - [License](#license)
+---
 
 ## Motivation
 ```
@@ -217,6 +220,13 @@ was developed empirically:
   groups (weight matrices get decay 0.1, biases and LayerNorm 
   parameters do not)
 
+- Training loss is evaluated every `eval_interval` steps using a 
+**Monte Carlo estimate** over `eval_iters` batches with gradients 
+disabled, switching the model to eval mode to disable dropout 
+during measurement and back to train mode immediately after. 
+This gives a stable, unbiased loss signal without affecting 
+the training state.
+
 Result: clean training, negligible overfitting, train/val gap of 
 0.053 at step 5000.
 
@@ -331,7 +341,7 @@ where abstract routing commits across all 8 heads simultaneously
 while local and global signals persist as secondaries. It is not 
 a clean switch. It is a commit.**
 
-Every primary head types except locals, starts of as a secondary signal before commiting as primary signals in upcoming layers.
+Every circuit type except local attention appears first as a secondary signal in earlier layers before becoming dominant. The model grows its circuits rather than switching them on.
 
 From layer 3 onward, three circuit families run in parallel in 
 every layer without exception: abstract routing, global aggregation, 
@@ -601,6 +611,29 @@ doing that this project can currently provide.
 
 ---
 
+## Limitations
+
+**Single prompt findings.** All research findings are from one prompt 
+on one checkpoint. Head classifications and hidden state patterns have 
+not been verified across multiple prompts or training seeds. They are 
+directional observations, not established facts.
+
+**Undertrained relative to data recommendations.** At 25M parameters 
+and 4.4M characters of training data, NanoLens is approximately 100x 
+below Chinchilla recommendations. The model converges and produces 
+meaningful circuit behaviour, but more data would improve both 
+generation quality and the clarity of learned circuits.
+
+**No activation patching.** Circuit verification via activation 
+patching is not currently implemented. The findings describe 
+correlational patterns between attention behaviour and hidden state 
+trajectories, not causal mechanisms. Patching is listed under future 
+work in conclusions.md.
+
+**Character-level ceiling.** Beyond approximately 150M parameters, 
+character-level tokenisation becomes the quality bottleneck. Scaling 
+further requires switching to subword tokenisation.
+
 ## Generated Output
 `And as forgotten, Dmitri Fyodorovitch, who has proved, a conscious
 with the last fraud coffin efforts. He was not to be alarmed, his
@@ -739,3 +772,95 @@ out — genuinely curious what other architectures and datasets produce.
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
+
+---
+
+# NanoLens vs TransformerLens
+
+> Two different tools for two different problems.
+> NanoLens is built for training and understanding your own model from scratch.
+> TransformerLens is built for studying large pretrained models with surgical precision.
+> They are not competitors. They are complements.
+
+---
+
+## Feature Comparison
+
+| Feature | NanoLens | TransformerLens |
+|---|---|---|
+| Train from scratch | YES | NO |
+| Inspect internal activations | YES | YES |
+| Custom architecture | YES | NO — wraps existing models |
+| Scale freely via config | YES — one YAML file | NO — model-dependent |
+| Character-level tokenisation | YES | NO |
+| Subword / BPE tokenisation | NO | YES |
+| Public pretrained weights | YES — 25M param Dostoevsky | YES — GPT-2, Pythia, LLaMA and more |
+| Documented circuit findings | YES — 64 heads, 8 layers | YES — extensive literature |
+| Activation patching | NOT YET — planned for PRISMA | YES — core feature |
+| Attention heatmaps | YES | YES |
+| Hidden state norm analysis | YES | YES |
+| Logit lens | NOT YET | YES |
+| Cosine similarity across layers | YES | YES |
+| Hook system | PyTorch forward hooks | TransformerLens HookPoints — more granular |
+| Induction head detection | Visual classification | Automated + activation patching |
+| Residual stream decomposition | Partial | Full |
+| CLI driven | YES — train, generate, inspect, resume, dry run | NO — library, used in notebooks |
+| Zero-friction setup | git clone + pip install | pip install + load model |
+| Learning resource | Primary purpose | Secondary benefit |
+| Research baseline | Small scale, own data | Medium to large scale, standard models |
+| Chinchilla scaling guide | YES — in TRAINING.md | NO |
+| Hardware ceiling documented | YES — T4, A100 estimates | NO |
+| Modular codebase to study | YES — every component separated | NO — library internals |
+| GSoC / open source contribution | Actively maintained | Actively maintained |
+| Community | Growing | Large, active interpretability community |
+| Best for | Training your own model and understanding it completely | Studying what large pretrained models have already learned |
+
+---
+
+## When to Use NanoLens
+
+You want to train a transformer on your own data and understand
+what it learns internally. You want a research artifact you built
+and own completely. You want to study circuit formation from the
+beginning of training, not just the end state. You want modular,
+readable code you can extend, modify, and publish from.
+
+NanoLens gives you the full pipeline: architecture to training to
+inspection to documented findings. One repo, complete picture.
+
+---
+
+## When to Use TransformerLens
+
+You want to study GPT-2, Pythia, LLaMA, or other large standard
+models. You need activation patching for causal circuit
+verification. You want access to the full residual stream
+decomposition and logit lens on a large model. You want to build
+on the extensive existing interpretability literature that uses
+TransformerLens as its standard tool.
+
+TransformerLens is the field standard for a reason. Neel Nanda
+built it to make mechanistic interpretability research accessible
+at scale. If your research involves models above a few hundred
+million parameters, TransformerLens is the right tool.
+
+---
+
+## The Relationship
+
+NanoLens is the foundation. TransformerLens is the scale-up.
+
+The inspection methodology developed in NanoLens — dual-mechanism
+capture, attention classification, hidden state norm analysis,
+cosine similarity across layers — is designed to port directly to
+TransformerLens for larger model experiments.
+
+NanoLens documents what a small transformer learns when you build
+it from scratch. TransformerLens lets you ask the same questions
+of models that are orders of magnitude larger. Understanding one
+deeply makes you better at studying the other.
+
+---
+
+*NanoLens — github.com/AdityaSinghDevs/nanolens*
+*TransformerLens — github.com/neelnanda-io/TransformerLens*
