@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+./monolith(experimental_build)/
+
 # Distribution / packaging
 .Python
 build/

@@ -514,7 +514,7 @@ Checkpoints save to both local Colab storage and Drive automatically when Drive 
                --checkpoint checkpoints/nanolens_L8_H8_E512_3000.pt
 ```
 
-You may refer to [Colab Run Demo](https://github.com/AdityaSinghDevs/nanolens/notebooks/colab-30Mparam-train-run.ipynb) 
+You may refer to [Colab Run Demo](nanolens/notebooks/colab-30Mparam-train-run.ipynb) 
 
 ### Colab memory management
 
