@@ -4,7 +4,7 @@
 
 > This document synthesises findings from two independent analyses: [attention_circuit_analysis.md](attention_circuit_analysis.md) and [hidden_state_analysis.md](hidden_state_analysis.md). All caveats from both documents apply here. Findings are from a single trained checkpoint on a single prompt: *"Raskolnikov hesitated at the threshold, his hands trembling."* They are directional and exploratory, not claims about transformers in general.
 
-> **Layer nomenclature**: This document uses 0-indexed layer numbering (Layer 0 through Layer 7) matching the attention circuit analysis and image filenames. Hidden state findings from the hidden state analysis, which uses 1-indexed numbering, are translated accordingly. Where a hidden state finding references "Layer 8" it refers to the output of Layer 7 (0-indexed), the final transformer block.
+> **Layer nomenclature**: This document uses 0-indexed layer numbering (Layer 0 through Layer 7), matching the attention circuit analysis, hidden state analysis, and image filenames throughout.
 
 > **Literature connections** were identified with AI assistance. Primary sources should be consulted directly for full context.
 
@@ -20,11 +20,11 @@ This document does not summarise the attention circuit analysis or the hidden st
 
 NanoLens is a ~25 million parameter character-level autoregressive transformer trained on 4.4 million characters of Dostoevsky. It has 8 layers, 8 attention heads per layer, and a 512-dimensional embedding space, producing 64 attention heads in total. This analysis inspects what those 64 heads learn and what happens to token representations as they flow through the model.
 
-The central finding is that this model organises its computation into a clear hierarchy that runs from local sequential structure in the earliest layers to abstract semantic routing in the final layers. This hierarchy is not gradual. Layer 3 is a convergence point where abstract routing commits across all 8 heads simultaneously while local and global signals persist as secondaries. The hidden state data independently confirms this transition: R's norm delta is highest in layers 1 and 2 (0-indexed) and begins tapering precisely as abstract routing commits at layer 3.
+The central finding is that this model organises its computation into a clear hierarchy that runs from local sequential structure in the earliest layers to abstract semantic routing in the final layers. This hierarchy is not gradual. Layer 3 is a convergence point where abstract routing commits across all 8 heads simultaneously while local and global signals persist as secondaries. The hidden state data independently confirms this transition: R's norm delta is highest in layers 1 and 2 and begins tapering precisely as abstract routing commits at layer 3.
 
 Six functionally distinct attention head types are documented across the 64 heads: previous token heads, identity preservation heads, word boundary heads, first token sink heads, abstract routing heads, and extended lookback heads. These types do not appear and disappear cleanly. Every circuit type except local attention appears first as a secondary signal in earlier layers before graduating to dominance. The model grows its circuits rather than switching them on.
 
-The hidden state analysis shows the consequence of this circuit structure on token representations. R, occupying the sequence-initial position, accumulates the highest norm of any tracked token across all 8 layers, peaks at layer 5 (0-indexed), and then undergoes norm redistribution in layers 6 and 7. This timing matches the lifecycle of the first token sink circuit exactly: building across layers 0 through 3, crystallising at layers 4 and 5, dispersing at layer 6. Two independent measurements pointing at the same phenomenon.
+The hidden state analysis shows the consequence of this circuit structure on token representations. R, occupying the sequence-initial position, accumulates the highest norm of any tracked token across all 8 layers, peaks at layer 5, and then undergoes norm redistribution in layers 6 and 7. This timing matches the lifecycle of the first token sink circuit exactly: building across layers 0 through 3, crystallising at layers 4 and 5, dispersing at layer 6. Two independent measurements pointing at the same phenomenon.
 
 The final layer is the most surprising finding in the combined analysis. The attention data shows layer 7 is the most functionally committed layer in the model, with abstract routing dominant across all 8 heads and the lowest proportion of ambiguous mixed patterns of any layer including layer 0. The hidden state data shows the final layer transition produces the largest directional reorientation of any transition in the middle layers, and the largest norm delta of any token at any layer goes to punctuation at the final layer. Layer 7 is not polishing settled representations. It is doing the most specialised and most directionally significant work in the entire forward pass.
 
@@ -54,15 +54,15 @@ From layer 3 onward three circuit families run in parallel in every layer withou
 
 *Left: L5_H6, first dedicated first token sink head. Right: L6_H3, strongest first token sink head in the model.*
 
-**What the hidden state data shows:** R starts with the highest norm of all tracked tokens at layer 0 and maintains that lead across all 8 layers. It peaks at layer 5 (0-indexed) and shows negative norm deltas at layers 6 and 7, the only token in the entire analysis to show negative deltas at any layer. Every other token grows monotonically.
+**What the hidden state data shows:** R starts with the highest norm of all tracked tokens at layer 0 and maintains that lead across all 8 layers. It peaks at layer 5 and shows negative norm deltas at layers 6 and 7, the only token in the entire analysis to show negative deltas at any layer. Every other token grows monotonically.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_content.png" width="75%">
 </div>
 
-*R dominates from the first layer and separates from all other tokens immediately. The peak at layer 6 in the plot (1-indexed) corresponds to Layer 5 (0-indexed), exactly where the strongest first token sink heads appear.*
+*R dominates from layer 0 and separates from all other tokens immediately. It peaks at layer 5, exactly where the strongest first token sink heads appear.*
 
-**What they mean together:** The timing is exact. The first token sink circuit builds as R's norm grows. It peaks at layer 5 (0-indexed) as R's norm peaks. It disperses at layer 6 as R's norm begins declining. The attention analysis describes the routing mechanism. The hidden state analysis describes the representational consequence. The two measurements are tracking the same underlying circuit from two different angles, and they agree on the timing to the layer.
+**What they mean together:** The timing is exact. The first token sink circuit builds as R's norm grows. It peaks at layer 5 as R's norm peaks. It disperses at layer 6 as R's norm begins declining. The attention analysis describes the routing mechanism. The hidden state analysis describes the representational consequence. The two measurements are tracking the same underlying circuit from two different angles, and they agree on the timing to the layer.
 
 ---
 
@@ -74,7 +74,7 @@ From layer 3 onward three circuit families run in parallel in every layer withou
 
 *Both heads show the left column almost fully lit. The routing target is fixed and reliable.*
 
-**What the hidden state data shows:** R shows cosine similarity of 1.00 across three consecutive layer transitions: Layer 3 to Layer 4, Layer 4 to Layer 5, and Layer 5 to Layer 6 (0-indexed). For three full layers the directional component of R's representation does not change at all. Only its magnitude continues growing.
+**What the hidden state data shows:** R shows cosine similarity of 1.00 across three consecutive layer transitions: Layer 3 to Layer 4, Layer 4 to Layer 5, and Layer 5 to Layer 6. For three full layers the directional component of R's representation does not change at all. Only its magnitude continues growing.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/cosine_similarity.png" width="75%">
@@ -94,13 +94,13 @@ From layer 3 onward three circuit families run in parallel in every layer withou
 
 *Left: L4_H4, clearest abstract routing head, sparse high-contrast non-local hits. Right: L3_H7, strong abstract routing at the convergence layer itself.*
 
-**What the hidden state data shows:** R's norm delta is highest at layer 1 (0-indexed), approximately 11 units, and second highest at layer 2, approximately 8 units. From layer 3 onward R's delta drops significantly and continues declining. The burst of representational work on the sequence-initial position is concentrated in exactly the layers where local attention is dominant.
+**What the hidden state data shows:** R's norm delta is highest at layer 1, approximately 11 units, and second highest at layer 2, approximately 8 units. From layer 3 onward R's delta drops significantly and continues declining. The burst of representational work on the sequence-initial position is concentrated in exactly the layers where local attention is dominant.
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_deltas.png" width="75%">
 </div>
 
-*R (blue) shows the largest deltas in early layers and the only negative deltas in the model. The taper from layer 2 onward corresponds directly to the layer 3 convergence point in the attention analysis.*
+*R (blue) shows the largest deltas in early layers and the only negative deltas in the model. The taper from layer 3 onward corresponds directly to the layer 3 convergence point in the attention analysis.*
 
 **What they mean together:** The norm data shows the model doing its heaviest local processing work on R in layers 1 and 2, precisely the layers where local and global circuits are preparing to hand over to abstract routing. When abstract routing commits at layer 3, the intensive local accumulation phase ends. Layer 4 onward shows lower and more evenly distributed deltas across tokens, consistent with the distributed parallel processing the attention analysis identifies from layer 3 onward.
 
@@ -128,13 +128,13 @@ From layer 3 onward three circuit families run in parallel in every layer withou
 
 ### 2.5 Punctuation Processing and the Mid-Network Separator Window
 
-**What the attention data shows:** Punctuation separator heads appear as secondary signal in exactly two layers, 3 and 4 (0-indexed), and nowhere else. This narrow mid-network window suggests punctuation-as-boundary is a transitional computation, active specifically during the shift from local to abstract processing.
+**What the attention data shows:** Punctuation separator heads appear as secondary signal in exactly two layers, 3 and 4, and nowhere else. This narrow mid-network window suggests punctuation-as-boundary is a transitional computation, active specifically during the shift from local to abstract processing.
 
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L4_H3.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/attention/L5_H4.png" width="48%">
 
 *Left: L4_H3, punctuation separator behaviour appearing as secondary at layer 4. Right: L5_H4, the same secondary signal persisting at layer 4 before disappearing entirely from layer 5 onward.*
 
-**What the hidden state data shows:** Comma and period show two distinct phases. They start at layer 0 with anomalously high norm relative to content tokens, track slowly through the middle layers, then spike sharply at layers 6 and 7 (0-indexed). The norm delta for comma and period at the final layer is the largest delta of any token at any layer in the entire analysis.
+**What the hidden state data shows:** Comma and period show two distinct phases. They start at layer 0 with anomalously high norm relative to content tokens, track slowly through the middle layers, then spike sharply at layers 6 and 7. The norm delta for comma and period at the final layer is the largest delta of any token at any layer in the entire analysis.
 
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_structural.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_deltas.png" width="48%">
 
@@ -188,11 +188,11 @@ Layer 2 widens the local context window. Extended lookback heads attend two to t
 
 Layer 3 commits. Abstract routing becomes dominant across all 8 heads simultaneously. No head is doing only one thing: previous token behaviour persists as secondary in 4 heads, first token sink in 3. But abstract routing has taken command. R's norm delta begins tapering from 11 at layer 2 to 8 here. The burst of local accumulation is ending. From this point forward the model runs abstract routing, global aggregation, and boundary detection in parallel at every layer.
 
-Layers 4 and 5 see the first token sink circuit crystallise. BOS secondary signal, present since layer 1, grows through layer 4 where 5 heads carry it. At layer 5 two dedicated specialist heads appear. L5_H6 is the first head whose dominant pattern is the left-column BOS sink rather than abstract routing with BOS as secondary. R's direction, which has been changing slightly through layers 0 to 3, locks completely by layer 4 and shows 1.00 cosine similarity across three consecutive transitions. The aggregation target is now directionally fixed.
+Layers 4 and 5 see the first token sink circuit crystallise. BOS secondary signal, present since layer 1, grows through layer 4 where 5 heads carry it. At layer 5 two dedicated specialist heads appear. L5_H6 is the first head whose dominant pattern is the left-column BOS sink rather than abstract routing with BOS as secondary. R's direction, which has been changing slightly through layers 0 to 3, locks completely by layer 3 and shows 1.00 cosine similarity across three consecutive transitions. The aggregation target is now directionally fixed.
 
-Layer 6 is the peak of global context aggregation. L6_H3 is the strongest first token sink head in the model, the entire left column lit with minimal secondary signal. R's norm reaches its maximum at approximately 87. Every head that has routed information into R over the previous 6 layers has contributed to that accumulation. The gap between R and the next highest token is over 30 norm units. R's norm delta goes negative for the first time here, the model beginning to redistribute information outward from the BOS position toward the tokens that will feed the final prediction.
+Layer 6 is the peak of global context aggregation. L6_H3 is the strongest first token sink head in the model, the entire left column lit with minimal secondary signal. R's norm reaches its maximum at approximately 87. Every head that has routed information into R over the previous layers has contributed to that accumulation. The gap between R and the next highest token is over 30 norm units. R's norm delta goes negative for the first time here, the model beginning to redistribute information outward from the BOS position toward the tokens that will feed the final prediction.
 
-Layer 7 is the sharpest and most committed layer in the model. Abstract routing dominates all 8 heads. The first token sink circuit has dispersed fully back to secondary status. R's norm delta remains negative. Punctuation tokens, which have been tracking slowly through the middle layers, receive their largest norm delta of any layer here, exceeding even R's peak delta at layer 2. The model is concentrating its final representational effort on the tokens most directly predictive of structural boundaries. The directional reorientation at this final block transition is the largest of any transition in the model for several tokens. This is not cleanup. It is the most specialised processing stage in the entire forward pass.
+Layer 7 is the sharpest and most committed layer in the model. Abstract routing dominates all 8 heads. The first token sink circuit has dispersed fully back to secondary status. R's norm delta remains negative. Punctuation tokens, which have been tracking slowly through the middle layers, receive their largest norm delta of any layer here, exceeding even R's peak delta at layer 1. The model is concentrating its final representational effort on the tokens most directly predictive of structural boundaries. The directional reorientation at this final block transition is the largest of any transition in the model for several tokens. This is not cleanup. It is the most specialised processing stage in the entire forward pass.
 
 The residual stream exits layer 7 and passes through ln_f, the final LayerNorm, before the language model head projects from 512 dimensions to 100 vocabulary positions. The output is a probability distribution over the next character. The model has spent 8 layers building local structure, widening context, committing to abstract routing, aggregating global context, and concentrating final effort on structural boundary tokens. That is what a forward pass through NanoLens looks like from the inside.
 

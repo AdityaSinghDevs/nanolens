@@ -495,7 +495,7 @@ reorienting them).
 
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_content.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_structural.png" width="48%">
 
-*Left: Content token trajectories. R dominates from layer 1 and 
+*Left: Content token trajectories. R dominates from layer 0 and 
 never yields that lead. Right: Structural token trajectories. 
 The three space tokens diverge despite identical initial embeddings. 
 Punctuation spikes sharply in the final layers.*
@@ -503,7 +503,7 @@ Punctuation spikes sharply in the final layers.*
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_deltas.png" width="48%"> <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/cosine_similarity.png" width="48%">
 
 *Left: Per-layer norm deltas. R is the only token with negative 
-deltas, at layers 7 and 8. Punctuation's final-layer delta exceeds 
+deltas, at layers 6 and 7. Punctuation's final-layer delta exceeds 
 every other token at every other layer. Right: Cosine similarity 
 heatmap. All values above 0.93 — the model changes direction far 
 less than it changes magnitude. R shows 1.00 across three 
@@ -511,9 +511,9 @@ consecutive middle-layer transitions.*
 
 ### Key findings from the hidden state analysis:
 
-**R dominates from layer 1 and redistributes at layer 7.** R 
+**R dominates from layer 0 and redistributes at layer 6.** R 
 starts with the highest norm of all tracked tokens and peaks at 
-layer 6. At layer 7 its norm drops for the first time — the only 
+layer 5. At layer 6 its norm drops for the first time — the only 
 token in the entire analysis to show negative deltas. This is 
 redistribution, not degradation. The model has finished 
 accumulating context into position 0 and begins spreading that 
@@ -523,7 +523,7 @@ information outward toward prediction.
 cosine similarity value falls between 0.93 and 1.00. The model 
 locks in what tokens mean early and spends subsequent layers 
 building how strongly it represents that meaning. R's direction 
-is fully locked by layer 4, showing 1.00 cosine similarity across 
+is fully locked by layer 3, showing 1.00 cosine similarity across 
 three consecutive transitions.
 
 **Not all spaces are equal.** space3 (before "the"), space1 
@@ -533,15 +533,15 @@ highest. Syntactic role drives representational weight, not token
 identity.
 
 **Punctuation has two distinct phases.** Comma and period show 
-anomalously high norm at layer 1, track flat through the middle 
+anomalously high norm at layer 0, track flat through the middle 
 layers, then spike sharply in the final layers. The final-layer 
 norm delta for punctuation is the largest delta of any token at 
 any layer in the entire analysis. Early layers encode punctuation 
 identity. Final layers encode punctuation function.
 
 **The final layer does more directional work than any middle 
-layer.** The Layer 7 to Layer 8 transition shows the lowest 
-cosine similarity values of any middle-layer transition. The 
+layer.** The layer 6 to layer 7 transition shows the lowest 
+cosine similarity values of any transition in the model. The 
 final layer is not polishing settled representations. It is 
 reorienting them.
 
@@ -555,14 +555,14 @@ strongest findings in this project.
 
 **The BOS sink circuit timing matches R's norm lifecycle exactly.** 
 The first token sink circuit crystallises at layers 5 and 6 in 
-the attention analysis. R's norm peaks at layer 6 and begins 
-declining at layer 7 in the hidden state analysis. Two 
+the attention analysis. R's norm peaks at layer 5 and begins 
+declining at layer 6 in the hidden state analysis. Two 
 measurements, same timing, same phenomenon described from 
 different angles.
 
 **R's directional lock-in explains why the BOS sink circuit 
 works.** R shows 1.00 cosine similarity across three consecutive 
-transitions beginning at layer 4 — its direction is fixed. The 
+transitions beginning at layer 3 — its direction is fixed. The 
 BOS sink circuit is stable and reliable precisely because the 
 aggregation target stopped changing direction before the 
 dedicated sink heads fully formed.
@@ -773,4 +773,3 @@ out — genuinely curious what other architectures and datasets produce.
 MIT — see [LICENSE](LICENSE) for details.
 
 ---
-
