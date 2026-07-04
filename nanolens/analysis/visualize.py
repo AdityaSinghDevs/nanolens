@@ -19,10 +19,9 @@ LAYER_CMAPS = [
 ]
 
 def plot_attention_head(result, layer=0, head=0, output_dir="results/attention"):
-    weights = result['attention_weights'][layer]  # (1, 8, 29, 29)
-    weights = weights[0, head].cpu().numpy()            # (29, 29) — one head
+    weights = result['attention_weights'][layer]  # (1, 8, T, T)
+    weights = weights[0, head].cpu().numpy()      # (T, T) — one head
 
-    # decode each token index back to character for axis labels
     tokens = [decode([t]) for t in result['tokens']]
 
     out_path = Path(output_dir)
@@ -46,7 +45,8 @@ def plot_attention_head(result, layer=0, head=0, output_dir="results/attention")
     plt.close()
     print(f"Saved → {filename}")
 
-def plot_all_heads(result, output_dir = "results/attention"):
+
+def plot_all_heads(result, output_dir="results/attention"):
     n_layers = len(result['attention_weights'])
     n_heads = result['attention_weights'][0].shape[1]
 
@@ -67,28 +67,27 @@ def plot_hidden_state_norms(result, positions, labels, title, filename, output_d
     out_path.mkdir(parents=True, exist_ok=True)
 
     punct = [',', '.']
-    all_norms = []
+    layer_indices = list(range(n_layer))  # 0 through n_layer-1
 
     fig, ax1 = plt.subplots(figsize=(14, 8))
 
     for i, pos in enumerate(positions):
         norms = []
-        for n in range(n_layer):
+        for n in layer_indices:
             hidden_state = result['hidden_states'][f'block_{n}'][0, pos, :]
             norm = torch.norm(hidden_state).item()
             norms.append(norm)
-        all_norms.append(norms)
 
         sizes = [30]
         for n in range(1, n_layer):
-            delta = abs(norms[n] - norms[n-1])
+            delta = abs(norms[n] - norms[n - 1])
             sizes.append(30 + delta * 2)
 
         linestyle = '--' if labels[i] in punct else '-'
-        line, = ax1.plot(range(1, n_layer + 1), norms, marker='o',
+        line, = ax1.plot(layer_indices, norms, marker='o',
                          label=labels[i], linewidth=2.5, linestyle=linestyle)
-        ax1.scatter(range(1, n_layer + 1), norms, s=sizes,
-                   color=line.get_color(), zorder=5, alpha=0.7)
+        ax1.scatter(layer_indices, norms, s=sizes,
+                    color=line.get_color(), zorder=5, alpha=0.7)
 
     ax1.text(0.99, 0.02,
              f'prompt: "{result["prompt"]}"',
@@ -96,11 +95,13 @@ def plot_hidden_state_norms(result, positions, labels, title, filename, output_d
              fontsize=8, color='grey',
              ha='right', va='bottom', style='italic')
 
+    ax1.set_xlabel('Layer', fontsize=15)
     ax1.set_ylabel('Hidden State Norm', fontsize=15)
     ax1.set_title(title, fontsize=15)
     ax1.tick_params(axis='both', labelsize=13)
-    ax1.set_xticks(range(1, n_layer + 1))
-    ax1.set_xlim(0.5, n_layer + 0.5)
+    ax1.set_xticks(layer_indices)
+    ax1.set_xticklabels(layer_indices)
+    ax1.set_xlim(-0.5, n_layer - 0.5)
     ax1.yaxis.set_major_locator(plt.MultipleLocator(6))
     ax1.grid(True, alpha=0.2)
     ax1.legend(loc='upper left', fontsize=12, framealpha=0.6)
@@ -130,17 +131,19 @@ def plot_norm_deltas(result, positions, labels, output_dir="results/hidden_state
             norm = torch.norm(hidden_state).item()
             norms.append(norm)
 
-        deltas = [0] + [norms[n] - norms[n-1] for n in range(1, n_layer)]
-        x_positions = [n + 1 + (i - len(positions)/2) * bar_width 
+        deltas = [0] + [norms[n] - norms[n - 1] for n in range(1, n_layer)]
+        # Centre bars around each 0-indexed layer tick
+        x_positions = [n + (i - len(positions) / 2) * bar_width
                        for n in range(n_layer)]
         ax2.bar(x_positions, deltas, width=bar_width, label=labels[i], alpha=0.75)
 
-    ax2.set_xlabel('Layer (1-indexed)', fontsize=15)
+    ax2.set_xlabel('Layer', fontsize=15)
     ax2.set_ylabel('Norm Delta', fontsize=15)
     ax2.set_title('Per-Layer Norm Change (how much work done at each layer)', fontsize=14)
     ax2.tick_params(axis='both', labelsize=13)
-    ax2.set_xticks(range(1, n_layer + 1), labels=range(1, n_layer + 1))
-    ax2.set_xlim(0.3, n_layer + 0.7)
+    ax2.set_xticks(range(n_layer))
+    ax2.set_xticklabels(range(n_layer))
+    ax2.set_xlim(-0.7, n_layer - 0.3)
     ax2.axhline(y=0, color='black', linewidth=0.9)
     ax2.grid(True, alpha=0.2)
     ax2.legend(loc='upper right', fontsize=11, framealpha=0.6, ncol=2)
@@ -165,7 +168,7 @@ def plot_cosine_similarity(result, positions, labels, output_dir="results/hidden
         layer_sims = []
         for pos in positions:
             a = result['hidden_states'][f'block_{i}'][0, pos, :]
-            b = result['hidden_states'][f'block_{i+1}'][0, pos, :]
+            b = result['hidden_states'][f'block_{i + 1}'][0, pos, :]
             sim = F.cosine_similarity(a.unsqueeze(0), b.unsqueeze(0)).item()
             layer_sims.append(sim)
         sims.append(layer_sims)
@@ -176,7 +179,7 @@ def plot_cosine_similarity(result, positions, labels, output_dir="results/hidden
     sns.heatmap(
         sims,
         xticklabels=labels,
-        yticklabels=[f'L{i+1}→L{i+2}' for i in range(n_layer - 1)],
+        yticklabels=[f'L{i}→L{i + 1}' for i in range(n_layer - 1)],
         cmap='RdYlGn',
         vmin=float(np.array(sims).min()) - 0.2,
         vmax=1.0,

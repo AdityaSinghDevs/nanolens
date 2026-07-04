@@ -6,7 +6,7 @@
 
 > This document analyses hidden state representations through norm trajectories, per-layer deltas, and layer-to-layer cosine similarity. Connections between these findings and attention circuit behaviour are drawn in [research_findings/conclusions.md](conclusions.md).
 
-> **Layer Nomenclature**: This document uses 1-indexed layer numbering (Layer 1 through Layer 8), matching plot axes. Layer 1 corresponds to Layer 0 in the attention circuit analysis.
+> **Layer Nomenclature**: This document uses 0-indexed layer numbering (Layer 0 through Layer 7), matching the attention circuit analysis and image filenames.
 
 > **Literature connections** were identified with AI assistance. The claims made about each cited work reflect the documented findings of those papers to the best of the author's knowledge, but primary sources should be consulted directly for full context.
 
@@ -43,25 +43,25 @@ Four measurements are used in this analysis. Each captures a different dimension
 
 ## 1. Headline Findings
 
-1. **R dominates from layer 1 and never yields that lead.** It starts with the highest norm of all tracked tokens and maintains that lead throughout all 8 layers, peaking at layer 6 before redistribution. No other token comes close at any layer.
+1. **R dominates from layer 0 and never yields that lead.** It starts with the highest norm of all tracked tokens and maintains that lead throughout all 8 layers, peaking at layer 5 before redistribution. No other token comes close at any layer.
 
-2. **R's norm drops at layers 7 and 8, the only token in the entire analysis to show negative deltas.** This is not degradation. It is redistribution. The model has finished accumulating context into the BOS position and begins spreading that information outward toward prediction.
+2. **R's norm drops at layers 6 and 7, the only token in the entire analysis to show negative deltas.** This is not degradation. It is redistribution. The model has finished accumulating context into the BOS position and begins spreading that information outward toward prediction.
 
 3. **Representational direction stabilises earlier than magnitude.** Cosine similarity between adjacent layers is above 0.93 for every token at every transition. The model locks in what tokens mean before it finishes building how strongly they are represented.
 
-4. **R's direction is fully locked by layer 4**, showing 1.00 cosine similarity across three consecutive transitions: Layer 4 to Layer 5, Layer 5 to Layer 6, and Layer 6 to Layer 7. The BOS position functions as a stable directional anchor precisely because its direction stopped changing early.
+4. **R's direction is fully locked by layer 3**, showing 1.00 cosine similarity across three consecutive transitions: Layer 3 to Layer 4, Layer 4 to Layer 5, and Layer 5 to Layer 6. The BOS position functions as a stable directional anchor precisely because its direction stopped changing early.
 
-5. **The final layer transition does more directional work than any middle layer transition.** Layer 7 to Layer 8 shows the lowest cosine similarity values across all tokens compared to any transition in layers 2 through 7. The final layer is not just refining. It is reorienting.
+5. **The final layer transition does more directional work than any middle layer transition.** Layer 6 to Layer 7 shows the lowest cosine similarity values across all tokens compared to any transition in layers 1 through 6. The final layer is not just refining. It is reorienting.
 
-6. **Standard content tokens h and space1 grow at a steady near-linear rate across all 8 layers with no sharp transitions.** They track closely through layers 1 to 5 before diverging slightly in the final layers. These are the baseline trajectories against which all other tokens are interpreted.
+6. **Standard content tokens h and space1 grow at a steady near-linear rate across all 8 layers with no sharp transitions.** They track closely through layers 0 to 4 before diverging slightly in the final layers. These are the baseline trajectories against which all other tokens are interpreted.
 
-7. **d, the end character of "hesitated," starts lowest and grows slowest, then accelerates sharply at layers 7 and 8.** End-of-word positions show late acceleration patterns similar to punctuation, suggesting the model defers processing of boundary-adjacent positions until structural relationships across the sequence have been resolved.
+7. **d, the end character of "hesitated," starts lowest and grows slowest, then accelerates sharply at layers 6 and 7.** End-of-word positions show late acceleration patterns similar to punctuation, suggesting the model defers processing of boundary-adjacent positions until structural relationships across the sequence have been resolved.
 
-8. **The three space tokens are not equivalent despite identical token type.** space3, the space before "the," grows faster than space1 and space5 across all layers and ends highest at layer 8. Position and syntactic role drive representational weight, not token identity alone.
+8. **The three space tokens are not equivalent despite identical token type.** space3, the space before "the," grows faster than space1 and space5 across all layers and ends highest at layer 7. Position and syntactic role drive representational weight, not token identity alone.
 
-9. **Punctuation tokens show two distinct phases: anomalously high norm at layer 1, then a sharp spike at layers 7 and 8.** Through the middle layers they track flat. Early layers encode punctuation identity. Final layers encode punctuation function. These are separable computations at different depths.
+9. **Punctuation tokens show two distinct phases: anomalously high norm at layer 0, then a sharp spike at layers 6 and 7.** Through the middle layers they track flat. Early layers encode punctuation identity. Final layers encode punctuation function. These are separable computations at different depths.
 
-10. **The layer 8 norm delta for comma and period is the largest delta of any token at any layer in the entire analysis**, exceeding even R's peak delta at layer 2. The final layer does more representational work on punctuation than any layer does on any other token type.
+10. **The layer 7 norm delta for comma and period is the largest delta of any token at any layer in the entire analysis**, exceeding even R's peak delta at layer 1. The final layer does more representational work on punctuation than any layer does on any other token type.
 
 ---
 
@@ -73,7 +73,7 @@ Four measurements are used in this analysis. Each captures a different dimension
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_content.png" width="75%">
 </div>
 
-Tracks R, h, d, and space1 across all 8 layers. R dominates from layer 1 and separates from all other tokens immediately. h and space1 grow at near-identical rates through layer 5 before diverging slightly. d starts lowest and grows slowest through layer 6 before accelerating sharply in the final layers.
+Tracks R, h, d, and space1 across all 8 layers. R dominates from layer 0 and separates from all other tokens immediately. h and space1 grow at near-identical rates through layer 4 before diverging slightly. d starts lowest and grows slowest through layer 5 before accelerating sharply in the final layers.
 
 ---
 
@@ -83,7 +83,7 @@ Tracks R, h, d, and space1 across all 8 layers. R dominates from layer 1 and sep
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_structural.png" width="75%">
 </div>
 
-Tracks R, space1, space3, space5, comma, and period across all 8 layers. The three space tokens show diverging trajectories despite identical token type. space3 grows fastest and ends highest. Comma and period start with anomalously high norm at layer 1 relative to their middle-layer trajectory, then spike sharply at layers 7 and 8.
+Tracks R, space1, space3, space5, comma, and period across all 8 layers. The three space tokens show diverging trajectories despite identical token type. space3 grows fastest and ends highest. Comma and period start with anomalously high norm at layer 0 relative to their middle-layer trajectory, then spike sharply at layers 6 and 7.
 
 ---
 
@@ -93,7 +93,7 @@ Tracks R, space1, space3, space5, comma, and period across all 8 layers. The thr
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_deltas.png" width="75%">
 </div>
 
-Shows how much representational work each layer does per token. R shows the largest deltas in early layers and the only negative deltas in the model at layers 7 and 8. Punctuation tokens show the largest deltas of any token at any layer at layer 8, exceeding even R's peak.
+Shows how much representational work each layer does per token. R shows the largest deltas in early layers and the only negative deltas in the model at layers 6 and 7. Punctuation tokens show the largest deltas of any token at any layer at layer 7, exceeding even R's peak.
 
 ---
 
@@ -103,29 +103,29 @@ Shows how much representational work each layer does per token. R shows the larg
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/cosine_similarity.png" width="75%">
 </div>
 
-Shows directional change in token representations between adjacent layers. All values are between 0.93 and 1.00. Representations change in magnitude far more than in direction. The lowest similarities appear at early transitions and at the final Layer 7 to Layer 8 transition. R shows 1.00 similarity across three consecutive middle-layer transitions, confirming directional lock-in by layer 4.
+Shows directional change in token representations between adjacent layers. All values are between 0.93 and 1.00. Representations change in magnitude far more than in direction. The lowest similarities appear at early transitions and at the final Layer 6 to Layer 7 transition. R shows 1.00 similarity across three consecutive middle-layer transitions, confirming directional lock-in by layer 3.
 
 ---
 
 ## 3. Deep Findings
 
-### R Dominates From Layer 1
+### R Dominates From Layer 0
 
-R starts with the highest hidden state norm of all tracked tokens at layer 1 with a value of approximately 54, already separated from every other token before a single layer of processing has occurred. This initial advantage compounds across every layer. By layer 6 R reaches approximately 87, a gap of over 30 norm units above the next highest token. No other token approaches this trajectory at any point.
+R starts with the highest hidden state norm of all tracked tokens at layer 0 with a value of approximately 54, already separated from every other token before a single layer of processing has occurred. This initial advantage compounds across every layer. By layer 5 R reaches approximately 87, a gap of over 30 norm units above the next highest token. No other token approaches this trajectory at any point.
 
-The separation is immediate and structural. R occupies position 0, the only position that is never masked by the causal mask and is always available as an attention target. Every head that develops first token sink behaviour across layers 1 through 6 is routing information into R's representation. The norm growth is the residual stream accumulation of that routing.
+The separation is immediate and structural. R occupies position 0, the only position that is never masked by the causal mask and is always available as an attention target. Every head that develops first token sink behaviour across layers 0 through 5 is routing information into R's representation. The norm growth is the residual stream accumulation of that routing.
 
 ---
 
-### The Layer 6 Peak and Redistribution
+### The Layer 5 Peak and Redistribution
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_deltas.png" width="75%">
 </div>
 
-R peaks at layer 6 and shows negative norm deltas at layers 7 and 8, the only token in the entire analysis to show negative deltas at any layer. Every other token grows monotonically across all 8 layers without exception.
+R peaks at layer 5 and shows negative norm deltas at layers 6 and 7, the only token in the entire analysis to show negative deltas at any layer. Every other token grows monotonically across all 8 layers without exception.
 
-This is not degradation. The model has finished accumulating context into the BOS position by layer 6. Layers 7 and 8 are the final processing layers before projection to vocabulary. The negative delta reflects the model redistributing information outward from R to other token positions as it moves toward prediction. The first token sink circuit identified in the attention analysis peaks at layer 6 and begins dispersing at layer 7. The norm trajectory confirms this timing precisely through an independent measurement.
+This is not degradation. The model has finished accumulating context into the BOS position by layer 5. Layers 6 and 7 are the final processing layers before projection to vocabulary. The negative delta reflects the model redistributing information outward from R to other token positions as it moves toward prediction. The first token sink circuit identified in the attention analysis peaks at layer 5 and begins dispersing at layer 6. The norm trajectory confirms this timing precisely through an independent measurement.
 
 ---
 
@@ -141,17 +141,17 @@ The implication is specific. The norm plots show large magnitude increases acros
 
 ---
 
-### R's Direction Locks by Layer 4
+### R's Direction Locks by Layer 3
 
-R shows cosine similarity of 1.00 across three consecutive layer transitions: Layer 4 to Layer 5, Layer 5 to Layer 6, and Layer 6 to Layer 7. For three full layers the directional component of R's representation does not change at all. Only its magnitude continues growing.
+R shows cosine similarity of 1.00 across three consecutive layer transitions: Layer 3 to Layer 4, Layer 4 to Layer 5, and Layer 5 to Layer 6. For three full layers the directional component of R's representation does not change at all. Only its magnitude continues growing.
 
-This is precisely why first token sink heads are stable and useful. Other tokens route attention back to R across layers 4 through 6 because R is a reliable, directionally fixed reference point. A token that is still changing direction would be an unstable aggregation target. R's directional lock-in is the mechanical property that makes the BOS sink circuit function as a global context anchor.
+This is precisely why first token sink heads are stable and useful. Other tokens route attention back to R across layers 3 through 5 because R is a reliable, directionally fixed reference point. A token that is still changing direction would be an unstable aggregation target. R's directional lock-in is the mechanical property that makes the BOS sink circuit function as a global context anchor.
 
 ---
 
 ### End-of-Word Tokens Show Late Acceleration
 
-d, the final character of "hesitated," starts with the lowest norm of all tracked tokens at layer 1 and grows most slowly through layers 1 to 6. From layer 7 onward it accelerates sharply, closing the gap with h and space1 and ending at approximately 52 at layer 8.
+d, the final character of "hesitated," starts with the lowest norm of all tracked tokens at layer 0 and grows most slowly through layers 0 to 5. From layer 6 onward it accelerates sharply, closing the gap with h and space1 and ending at approximately 52 at layer 7.
 
 This late acceleration pattern matches punctuation behaviour. Both d and the punctuation tokens show suppressed middle-layer growth followed by a sharp final-layer spike. The common factor is sequence boundary position. d ends a content word. Comma and period end clauses and the full sequence. The model appears to defer heavy processing of boundary-adjacent positions until the final layers when structural relationships across the full sequence have been resolved.
 
@@ -163,27 +163,27 @@ This late acceleration pattern matches punctuation behaviour. Both d and the pun
 <img src="https://raw.githubusercontent.com/AdityaSinghDevs/nanolens/main/results/hidden_states/norm_trajectory_structural.png" width="75%">
 </div>
 
-space1 (position 11, after "Raskolnikov"), space3 (position 28, before "the"), and space5 (position 49, before "his") are identical token types. They receive the same initial embedding. By layer 8 their norms have diverged significantly. space3 ends highest at approximately 67, space1 at approximately 59, space5 at approximately 59.
+space1 (position 11, after "Raskolnikov"), space3 (position 28, before "the"), and space5 (position 49, before "his") are identical token types. They receive the same initial embedding. By layer 7 their norms have diverged significantly. space3 ends highest at approximately 67, space1 at approximately 59, space5 at approximately 59.
 
 space3 precedes "the," a function word that introduces the noun phrase "the threshold." space1 follows a proper noun. space5 precedes a possessive pronoun. The model assigns different representational weight to syntactically distinct boundary positions despite their identical token identity. This is direct evidence that the model's representations are context-dependent at the level of individual positions, not just token types.
 
-This finding connects directly to the attention circuit analysis. Word boundary heads in layers 1 through 4 attend to the first space in the sequence only. From layer 5 onward they shift to syntactically meaningful spaces. The norm data shows the consequence of that shift: the spaces that receive more selective late-layer attention accumulate more representational weight by the final layer.
+This finding connects directly to the attention circuit analysis. Word boundary heads in layers 0 through 3 attend to the first space in the sequence only. From layer 4 onward they shift to syntactically meaningful spaces. The norm data shows the consequence of that shift: the spaces that receive more selective late-layer attention accumulate more representational weight by the final layer.
 
 ---
 
 ### Punctuation Has Anomalous Early Norm Before Late Spike
 
-Comma and period start at layer 1 with norm values of approximately 32 and 31 respectively, higher than h at 30 and d at 29, despite punctuation having no special structural role in early layers. Through layers 2 to 6 they grow slowly, tracking below the space tokens. Then at layers 7 and 8 they diverge sharply upward, ending at approximately 61 and 66 respectively.
+Comma and period start at layer 0 with norm values of approximately 32 and 31 respectively, higher than h at 30 and d at 29, despite punctuation having no special structural role in early layers. Through layers 1 to 5 they grow slowly, tracking below the space tokens. Then at layers 6 and 7 they diverge sharply upward, ending at approximately 61 and 66 respectively.
 
 Two distinct phases. Early layers encode punctuation identity strongly from the start. The model knows immediately that these are structurally special characters even before it has built the representations needed to use that information. Late layers add the semantic and syntactic weight when the full sequence context has been processed. The early high norm is identity encoding. The late spike is functional encoding. These are separable computations at different depths.
 
 ---
 
-### Layer 8 Does the Most Directional Work of Any Transition
+### Layer 7 Does the Most Directional Work of Any Transition
 
-The Layer 7 to Layer 8 row in the cosine similarity heatmap shows the lowest values across all tokens compared to any middle layer transition. d drops to 0.93, comma and period to 0.94, space3 to 0.93. These are the lowest similarity values in the entire grid outside of the very first transition.
+The Layer 6 to Layer 7 row in the cosine similarity heatmap shows the lowest values across all tokens compared to any middle layer transition. d drops to 0.93, comma and period to 0.94, space3 to 0.93. These are the lowest similarity values in the entire grid outside of the very first transition.
 
-This is counterintuitive. You would expect final layers to refine rather than reorient, to polish representations that are already directionally settled. Instead layer 8 introduces more directional change than layers 3 through 7 combined for several tokens. The final layer is doing something fundamentally different from middle layers, not just continuing the same refinement process.
+This is counterintuitive. You would expect final layers to refine rather than reorient, to polish representations that are already directionally settled. Instead layer 7 introduces more directional change than layers 2 through 6 combined for several tokens. The final layer is doing something fundamentally different from middle layers, not just continuing the same refinement process.
 
 This connects directly to the attention finding that layer 7 is the most functionally committed layer in the model. High attention commitment and high representational reorientation are occurring simultaneously in the final processing stage. The attention heads are running their most specialised patterns while the residual stream is undergoing its largest directional shift. These are two measurements of the same underlying event.
 
@@ -191,15 +191,15 @@ This connects directly to the attention finding that layer 7 is the most functio
 
 ### Standard Content Tokens Are the Baseline
 
-h (first character of "hesitated") and space1 (space after "Raskolnikov") grow at near-identical near-linear rates across all 8 layers. No spikes, no plateaus, no negative deltas. They track closely through layers 1 to 5 before diverging slightly in layers 6 to 8 with h pulling marginally ahead.
+h (first character of "hesitated") and space1 (space after "Raskolnikov") grow at near-identical near-linear rates across all 8 layers. No spikes, no plateaus, no negative deltas. They track closely through layers 0 to 4 before diverging slightly in layers 5 to 7 with h pulling marginally ahead.
 
 These tokens represent the baseline processing trajectory. Positions with no special structural role showing what normal representational growth looks like in this model. Every departure from this baseline in other tokens is meaningful: R's dominance, punctuation's late spike, d's slow start and late acceleration, space3's faster growth. The linear tokens provide the reference against which all other trajectories are interpreted.
 
 ---
 
-### Punctuation Spike at Layer 8 Exceeds Every Other Token
+### Punctuation Spike at Layer 7 Exceeds Every Other Token
 
-The layer 8 norm delta for comma and period is the largest delta of any token at any layer in the entire analysis. It exceeds R's largest delta at layer 2. It exceeds every structural token at every layer. The final layer does more representational work on punctuation than any layer does on any other token type.
+The layer 7 norm delta for comma and period is the largest delta of any token at any layer in the entire analysis. It exceeds R's largest delta at layer 1. It exceeds every structural token at every layer. The final layer does more representational work on punctuation than any layer does on any other token type.
 
 In a character-level autoregressive model predicting the next character, knowing whether the next character is punctuation or a letter is a high-stakes distinction. The model concentrates its final-layer representational work on the tokens most directly predictive of structural boundaries. The punctuation spike is not incidental. It is the model preparing for prediction.
 
@@ -221,7 +221,7 @@ Tenney et al., BERT Rediscovers the Classical NLP Pipeline, 2019, documents that
 
 ### BOS Position Representations
 
-The finding that R's direction locks completely by layer 4 while its magnitude continues growing through layer 6 does not have a direct quantitative precedent in the published literature at this model scale. The circuits framework predicts BOS sink behaviour in attention but does not make predictions about the norm and directional properties of the BOS position's hidden state trajectory. This is an observation that extends the existing literature rather than simply confirming it.
+The finding that R's direction locks completely by layer 3 while its magnitude continues growing through layer 5 does not have a direct quantitative precedent in the published literature at this model scale. The circuits framework predicts BOS sink behaviour in attention but does not make predictions about the norm and directional properties of the BOS position's hidden state trajectory. This is an observation that extends the existing literature rather than simply confirming it.
 
 ### Punctuation in Character-Level Models
 
